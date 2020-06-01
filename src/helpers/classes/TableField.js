@@ -10,6 +10,7 @@ export default class TableField extends Shape {
     constructor(name, options = {}) {
         super(name, {
             id: getID(options.table.self.fields.map(f => f.self)),
+            type: "int",
             ref: null,
             refType: "1to*",
             ...options
@@ -31,6 +32,7 @@ export default class TableField extends Shape {
         const json = {
             ...this.self,
             id: this.self.id,
+            type: this.self.type,
             ref: this.self.ref && { table: this.self.ref.self.table.self.id, field: this.self.ref.self.id },
             table: this.self.table.self.id
         };
