@@ -11,6 +11,7 @@ export default class TableField extends Shape {
         super(name, {
             id: getID(options.table.self.fields.map(f => f.self)),
             type: "int",
+            constraints: [],
             ref: null,
             refType: "1to*",
             ...options
