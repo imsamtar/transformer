@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
   import { menus } from "../stores/menus";
   import Field from "./Field.svelte";
+  import { render, editorElement } from "./Editor.svelte";
   export let table;
 
   let autofocus = false;
@@ -85,6 +86,7 @@
   $: {
     $table.element = element;
     $table.element === element;
+    $editorElement && render($editorElement)();
   }
 </script>
 

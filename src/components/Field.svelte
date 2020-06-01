@@ -3,6 +3,7 @@
   import { menus } from "../stores/menus";
   import { selectedField } from "../stores/tables";
   import { addRef } from "../helpers/index";
+  import { render, editorElement } from "./Editor.svelte";
 
   export let field;
   let element;
@@ -14,6 +15,21 @@
     )
       element.querySelector("input").focus();
   });
+
+  let del = true;
+  function keyup(e) {
+    if (!$field.name && e.key.toLowerCase() === "backspace") {
+      if (del) {
+        const fieldIndex = $field.table.self.fields.findIndex(f => f === field);
+        fieldIndex &&
+          $field.table.self.fields[fieldIndex - 1].self.element
+            .querySelector("input")
+            .focus();
+        field.remove();
+      } else return (del = true);
+    }
+    del = false;
+  }
 
   function click(e) {
     if (e.altKey) {
@@ -37,6 +53,10 @@
   $: {
     $field.element = element;
     $field.element === element; // For some reason it is required
+    $editorElement && render($editorElement)();
+  }
+  $: if ($field.name.match(/\s/g)) {
+    $field.name = $field.name.replace(/\s/g, "");
   }
 </script>
 
@@ -74,7 +94,11 @@
   on:click={click}
   on:contextmenu={contextmenu}
   class:selected={$selectedField === field}>
-  <input type="text" bind:value={$field.name} />
+  <input
+    type="text"
+    on:keyup={keyup}
+    bind:value={$field.name}
+    title="{$field.table.self.name}.{$field.name} ({$field.type.toUpperCase()}) {$field.pk ? 'pk' : ''}{$field.ref ? 'fk' : ''}" />
   {#if $field.pk}
     <span>PK</span>
   {/if}
