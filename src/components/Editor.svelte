@@ -20,15 +20,11 @@
         refField = refTable.fields.find(
           _field => _field.id === field.ref.field
         );
-        ref += `\nref: ${refTable.name}.${refField.name} ${
-          field.refType == "1to1"
-            ? "<>"
-            : field.refType == "1to*"
-            ? "<"
-            : field.refType == "*to*"
-            ? "><"
-            : ""
-        } ${table.name}.${field.name}`;
+        ref += `\nref: ${refTable.name}.${
+          refField.name
+        } <${field.refType
+          .replace(/\s*to\s*/, " to ")
+          .replace(/\s*or\s*/, " or ")}> ${table.name}.${field.name}`;
       }
       const constraints = [...field.constraints];
       field.ref && constraints.unshift("fk");
@@ -86,13 +82,8 @@
     );
     (text.match(/ref:.+(\n|$)/g) || []).forEach(line => {
       line = line.replace(/(ref:[\s]*|\n)/g, "");
-      line = line.match(/((\w+.\w+)|(<>|><|<))/g);
-      if (
-        line.length > 2 &&
-        line[0].match(/\w+\.\w+/g) &&
-        line[2].match(/\w+\.\w+/g) &&
-        line[1].match(/(<>|><|<)/)
-      ) {
+      line = line.match(/(\w+.\w+)|(<.*>)/g);
+      if (line.length > 2) {
         let fkTable = result.find(t => t.name === line[2].split(".")[0]);
         if (!fkTable) throw new Error("fk table does not exist");
         let fkField = fkTable.fields.find(
@@ -105,18 +96,15 @@
           f => f.name === line[0].split(".")[1]
         );
         if (!refField) throw new Error("ref field does not exist");
-        fkField.refType =
-          line[1] === "<>"
-            ? "1to1"
-            : line[1] === "<"
-            ? "1to*"
-            : line[1] === "><"
-            ? "*to*"
-            : "";
-        fkField.ref = {
-          table: refTable.id,
-          field: refField.id
-        };
+        if ((line[1] = line[1].match(/[\w\*].*[\w\*]/g))) {
+          line[1] = line[1][0].replace(/\s+/g, "");
+          line[1] = line[1].replace(/1\s*or\s*0/g, "0or1");
+          line[1].match(/to/g) && (fkField.refType = line[1]);
+          fkField.ref = {
+            table: refTable.id,
+            field: refField.id
+          };
+        }
       }
       return line;
     });
