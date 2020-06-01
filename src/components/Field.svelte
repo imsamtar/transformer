@@ -98,7 +98,7 @@
     type="text"
     on:keyup={keyup}
     bind:value={$field.name}
-    title="{$field.table.self.name}.{$field.name} ({$field.type.toUpperCase()}) {$field.pk ? 'pk' : ''}{$field.ref ? 'fk' : ''}" />
+    title={`${$field.table.self.name}.${$field.name} (${($field.type || '').toUpperCase()}) ${$field.pk ? 'pk' : ''}${$field.ref ? 'fk' : ''}`} />
   {#if $field.pk}
     <span>PK</span>
   {/if}
