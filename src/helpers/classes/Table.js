@@ -30,6 +30,7 @@ export default class Table extends Shape {
         delete json.element;
         delete json.hover;
         delete json.tables;
+        delete json.active;
         return json;
     }
     toString() {
