@@ -44,15 +44,42 @@
       localStorage.setItem("tables", tables.toString());
     } else if (e.key === "o" && e.ctrlKey) {
       e.preventDefault();
+      function schema(table) {
+        return table.schema === "public" ? "" : `"${table.schema}".`;
+      }
       let _sql = "";
       let _tables = tables.toJSON();
       _tables.forEach(table => {
-        let statement = `CREATE TABLE ${table.name}(${table.fields.map(
-          (f, i) =>
-            `${i ? " " : ""}${f.name} VARCHAR${f.pk ? " PRIMARY KEY" : ""}`
-        )});`;
-        _sql += statement + "\n";
+        _sql += `\nCREATE TABLE ${schema(table)}"${
+          table.name
+        }" (${table.fields.map((f, i) => {
+          return `\n  "${f.name}" ${f.type.toUpperCase()}${f.constraints.reduce(
+            (r, c) => `${r} ${c.toUpperCase()}`,
+            ""
+          )}`;
+        })},\n  PRIMARY KEY (${table.fields
+          .filter(f => f.pk)
+          .map(f => `"${f.name}"`)})
+);\n`;
       });
+      _tables.forEach(table => {
+        table.fields.forEach(f => {
+          let statement = "";
+          if (f.ref) {
+            const refTable = _tables.find(t => t.id === f.ref.table);
+            const refField =
+              refTable && refTable.fields.find(fd => fd.id === f.ref.field);
+            if (refField)
+              statement += `\nALTER TABLE ${schema(table)}"${
+                table.name
+              }" ADD FOREIGN KEY ("${f.name}") REFERENCES ${schema(refTable)}"${
+                refTable.name
+              }" ("${refField.name}");\n`;
+          }
+          _sql += statement;
+        });
+      });
+      _sql = _sql[0] === "\n" ? _sql.substr(1) : _sql;
       const link = document.createElement("a");
       link.href = URL.createObjectURL(
         new Blob([_sql], { type: "application/text" })

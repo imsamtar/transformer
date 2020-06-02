@@ -10,8 +10,10 @@
   export function fromJSON(json) {
     let result = "";
     let ref = "";
+    let schema;
     json.forEach(table => {
-      const str = `Table ${table.name} {
+      schema = table.schema;
+      const str = `\nTable ${table.name} {
     ${table.fields.map((field, i) => {
       let refTable;
       let refField;
@@ -36,15 +38,22 @@
           }`
       )}`;
     })}
-}
-`;
+}\n`;
       result += str;
     });
-    return result + ref + "\n";
+    result = result[0] === "\n" ? result.substr(1) : result;
+    return (
+      (schema == "public" ? "" : `schema: ${schema}\n\n`) + result + ref + "\n"
+    );
   }
 
   export function toJSON(text) {
     let result = [];
+    let schema;
+    if ((schema = text.match(/schema:\s*\w+/)))
+      schema = schema[0].replace(/schema:\s*/, "");
+    else schema = "public";
+
     (text.match(/Table[\s]+[\w]+[\s]*{[\s\w\[\],]+}/g) || []).forEach(
       (table, i) => {
         const tableName = table
@@ -53,6 +62,7 @@
         result[i] = {
           id: i,
           name: tableName,
+          schema,
           pos: [
             (innerWidth * 0.32 + (i % 4) * 300) % innerWidth,
             50 + parseInt(i / 4) * 300
@@ -60,21 +70,30 @@
           fields: (
             table.replace(/.+{|}/g, "").match(/\w.+(\]|,|\n)/g) || []
           ).map((line, id) => {
+            let result = [];
             line = line.replace(/,$/, "");
-            line = line
-              .replace(/\[|\]|,/g, "")
-              .split(/[\s]+/)
-              .filter(m => m);
+            result = line
+              .match(/\w+[\w\s]*/)[0]
+              .split(/\s+/)
+              .filter(x => x);
+            let constraints;
+            if ((constraints = line.match(/\[.*\]/g))) {
+              constraints = constraints[0]
+                .match(/\w[\w\s,]*\w/)[0]
+                .replace(/\s+/g, " ")
+                .split(/\s*,\s*/);
+              result = [...result, ...constraints];
+            }
             let field = {
               id,
-              name: line[0],
-              pk: !!line.find(word => word === "pk"),
-              constraints: line.filter(
+              name: result[0],
+              pk: !!result.find(word => word === "pk"),
+              constraints: result.filter(
                 (world, index) =>
                   index > 1 && !["pk", "fk"].find(w => w === world)
               )
             };
-            line[1] && (field.type = line[1]);
+            result[1] && (field.type = result[1]);
             return field;
           })
         };
