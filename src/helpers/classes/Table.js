@@ -12,6 +12,7 @@ export default class Table extends Shape {
     constructor(name, options) {
         super(name, {
             id: get_table_id(),
+            schema: "public",
             fields: [],
             tables,
             ...options
