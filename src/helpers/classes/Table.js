@@ -17,7 +17,7 @@ export default class Table extends Shape {
             tables,
             ...options
         });
-        this.tables = [...this.tables, this];
+        this.self.tables.update(tables => [...tables, this]);
     }
     createField(name, options) {
         return new TableField(name, { table: this, ...options });
