@@ -1,14 +1,14 @@
 <script>
-  import tables from "./stores/tables";
+  import tables, { mode } from "./stores/tables";
   import Table from "./components/Table.svelte";
   import Menu from "./components/Menu.svelte";
   import Link from "./components/Link/Link.svelte";
   import { createTable } from "./helpers/table";
   import { menus } from "./stores/menus";
   import { mouseMove, touchStart, touchMove } from "./helpers/navigate.js";
-  import Editor from "./components/Editor.svelte";
+  import Editor, { render, editorElement } from "./components/Editor.svelte";
 
-  let editor = true;
+  let editor = !!JSON.parse(localStorage.getItem("editor"));
 
   function mainMenu(e) {
     $menus.pos = [e.x, e.y];
@@ -22,6 +22,47 @@
       });
       e.preventDefault();
     }
+  }
+  function schema({ schema }) {
+    return schema === "public" ? "" : `"${schema}".`;
+  }
+  function toSQL(_tables, options = {}) {
+    let schema_name = "public";
+    let sql = "";
+    _tables.forEach(table => {
+      schema_name = options.schema || table.schema;
+      sql += `\nCREATE TABLE ${schema({ schema: schema_name })}"${
+        table.name
+      }" (${table.fields.map((f, i) => {
+        return `\n  "${f.name}" ${f.type.toUpperCase()}${f.constraints.reduce(
+          (r, c) => `${r} ${c.toUpperCase()}`,
+          ""
+        )}`;
+      })},\n  PRIMARY KEY (${table.fields
+        .filter(f => f.pk)
+        .map(f => `"${f.name}"`)})
+);\n`;
+    });
+    _tables.forEach(table => {
+      table.fields.forEach(f => {
+        let statement = "";
+        if (f.ref) {
+          const refTable = (options.tables || _tables).find(
+            t => t.id === f.ref.table
+          );
+          const refField =
+            refTable && refTable.fields.find(fd => fd.id === f.ref.field);
+          if (refField)
+            statement += `\nALTER TABLE ${schema({ schema: schema_name })}"${
+              table.name
+            }" ADD FOREIGN KEY ("${f.name}") REFERENCES ${schema({
+              schema: schema_name
+            })}"${refTable.name}" ("${refField.name}");\n`;
+        }
+        sql += statement;
+      });
+    });
+    return { sql, schema_name };
   }
   function keydown(e) {
     if (e.ctrlKey && e.key.toLowerCase() === "e") {
@@ -41,84 +82,112 @@
       };
     } else if (e.key === "s" && e.ctrlKey) {
       e.preventDefault();
-      localStorage.setItem("tables", tables.toString());
-    } else if (e.key === "o" && e.ctrlKey) {
+      localStorage.setItem(`${$mode}_tables`, tables.toString());
+    } else if (e.key === "o" && e.ctrlKey && $mode === "create") {
       e.preventDefault();
-      function schema(table) {
-        return table.schema === "public" ? "" : `"${table.schema}".`;
-      }
-      let _sql = "";
-      let _tables = tables.toJSON();
-      _tables.forEach(table => {
-        _sql += `\nCREATE TABLE ${schema(table)}"${
-          table.name
-        }" (${table.fields.map((f, i) => {
-          return `\n  "${f.name}" ${f.type.toUpperCase()}${f.constraints.reduce(
-            (r, c) => `${r} ${c.toUpperCase()}`,
-            ""
-          )}`;
-        })},\n  PRIMARY KEY (${table.fields
-          .filter(f => f.pk)
-          .map(f => `"${f.name}"`)})
-);\n`;
-      });
-      _tables.forEach(table => {
-        table.fields.forEach(f => {
-          let statement = "";
-          if (f.ref) {
-            const refTable = _tables.find(t => t.id === f.ref.table);
-            const refField =
-              refTable && refTable.fields.find(fd => fd.id === f.ref.field);
-            if (refField)
-              statement += `\nALTER TABLE ${schema(table)}"${
-                table.name
-              }" ADD FOREIGN KEY ("${f.name}") REFERENCES ${schema(refTable)}"${
-                refTable.name
-              }" ("${refField.name}");\n`;
-          }
-          _sql += statement;
-        });
-      });
-      _sql = _sql[0] === "\n" ? _sql.substr(1) : _sql;
+      let { sql, schema_name } = toSQL(tables.toJSON());
+
+      if (schema_name !== "public")
+        sql = `CREATE SCHEMA IF NOT EXISTS "${schema_name}";\n${sql}`;
+      sql = sql[0] === "\n" ? sql.substr(1) : sql;
       const link = document.createElement("a");
       link.href = URL.createObjectURL(
-        new Blob([_sql], { type: "application/text" })
+        new Blob([sql], { type: "application/text" })
       );
-      link.download = "tables.sql";
+      link.download = `${schema_name}_${Date.now()}.sql`;
       link.click();
+    } else if (e.key === "o" && e.ctrlKey && $mode === "edit") {
+      e.preventDefault();
+      let sql = "";
+      let schema_name = "public";
+      const otables = JSON.parse(localStorage.getItem("create_tables"));
+      const etables = tables.toJSON();
+      etables.forEach(etable => {
+        const otable = otables.find(otable => otable.id === etable.id);
+        if (otable) {
+          schema_name = otable.schema;
+          etable.fields.forEach(efield => {
+            const ofield = otable.fields.find(
+              ofield => ofield.id === efield.id
+            );
+            if (!ofield) {
+              sql += `ALTER TABLE ${schema({ schema: schema_name })}"${
+                otable.name
+              }" ADD "${efield.name}" ${efield.type.toUpperCase()}${
+                efield.pk ? " PRIMARY KEY" : ""
+              }${efield.constraints.reduce(
+                (r, c) => `${r} ${c.toUpperCase()}`,
+                ""
+              )};\n`;
+            }
+          });
+        } else {
+          sql += toSQL([etable], { schema: schema_name, tables: otables }).sql;
+        }
+      });
+      if (sql) {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(
+          new Blob([sql], { type: "application/text" })
+        );
+        link.download = `${schema_name}_edit_${Date.now()}.sql`;
+        link.click();
+      }
+    } else if (e.ctrlKey && !e.shiftKey) {
+      if (e.key === "1") $mode = "create";
+      else if (e.key === "2") $mode = "edit";
+      else if (e.key === "3") $mode = "migration";
+      e.preventDefault();
     }
+  }
+  function switchMode() {
+    switch ($mode) {
+      case "create":
+        $tables = tables
+          .fromJSON(JSON.parse(localStorage.getItem("create_tables")) || [])
+          .read();
+        break;
+      case "edit":
+        $tables = tables
+          .fromJSON(
+            JSON.parse(
+              localStorage.getItem("edit_tables") ||
+                localStorage.getItem("create_tables")
+            )
+          )
+          .read();
+        break;
+      case "migration":
+        $tables = tables
+          .fromJSON(
+            JSON.parse(
+              localStorage.getItem("migration_tables") ||
+                localStorage.getItem("create_tables")
+            )
+          )
+          .read();
+        break;
+    }
+  }
+  $: if (!editor || $editorElement) {
+    switchMode($mode);
+    editor && render($editorElement)();
   }
   function toggleEditor(e) {
     editor = !editor;
   }
 
-  const saved = localStorage.getItem("tables");
+  const saved = localStorage.getItem(`${$mode}_tables`);
 
-  tables.fromJSON(JSON.parse(saved));
-  // const user = createTable("User", { pos: [600, 500] });
-  // user.createField("user_id", { pk: true });
-  // user.createField("username");
-  // user.createField("email");
-  // user.createField("secret");
-  // const calendar = createTable("Calendar", { pos: [100, 100] });
-  // calendar.createField("id", { pk: true });
-  // calendar.createField("name");
-  // calendar.createField("description");
-  // calendar.createField("created_by", { ref: $user.fields[0] });
-  // const event = createTable("Event", { pos: [1500, 100] });
-  // event.createField("event_id", { pk: true });
-  // event.createField("event_name");
-  // event.createField("description");
-  // event.createField("calendar", { ref: $calendar.fields[0], refType: "1to*" });
-  // event.createField("user", { ref: $user.fields[0] });
-  // user.createField("calendar1", { ref: $calendar.fields[0], refType: "0to*" });
+  saved && tables.fromJSON(JSON.parse(saved));
+  $: localStorage.setItem("editor", editor);
 </script>
 
 <style>
   main {
     text-align: center;
     background: var(--bg);
-    width: 50%;
+    width: 70%;
   }
   main > button {
     position: absolute;
@@ -126,6 +195,40 @@
     bottom: 2rem;
     padding: 1rem;
     font-size: 1rem;
+    border: 0;
+    outline: none;
+    background: #888;
+    color: white;
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px #888;
+    font-weight: bold;
+  }
+  main > button:hover {
+    background: #666;
+  }
+  main > #mode::before {
+    content: "mode";
+    background: var(--dark);
+    color: #eee;
+    padding: 0.3rem;
+  }
+  #mode:hover {
+    --dark: #666;
+  }
+  #mode {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-weight: bold;
+    border-radius: 0.2rem;
+    --dark: #888;
+  }
+  #mode::after {
+    content: attr(data-value);
+    background: #eee;
+    color: var(--dark);
+    padding: 0.3rem;
   }
 </style>
 
@@ -145,5 +248,6 @@
     <Table {table} />
   {/each}
   <Menu />
-  <button on:click={toggleEditor}>Toggle editor</button>
+  <button on:click={toggleEditor}>&lt;/&gt;</button>
+  <span id="mode" data-value={$mode} style={editor ? 'left:65%;' : ''} />
 </main>

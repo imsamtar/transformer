@@ -10,7 +10,7 @@
   export function fromJSON(json) {
     let result = "";
     let ref = "";
-    let schema;
+    let schema = "public";
     json.forEach(table => {
       schema = table.schema;
       const str = `\nTable ${table.name} {

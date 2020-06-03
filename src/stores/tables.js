@@ -1,15 +1,27 @@
 import { writable } from "svelte/store";
 import Table from "../helpers/classes/Table";
 
-export default new class {
+export const mode = writable("create");
+
+export default new class Tables {
     constructor() {
         const { subscribe, update, set } = writable([]);
         this.subscribe = subscribe;
         this.update = update;
         this.set = set;
     }
-    createTable(name, options) {
-        return new Table(name, options);
+    read() {
+        let tables;
+        this.subscribe(ts => tables = ts)();
+        return tables;
+    }
+    createTable(name, options = {}) {
+        let schema = "public";
+        const tables = this.toJSON();
+        if (tables.length) {
+            schema = tables[0].schema;
+        }
+        return new Table(name, { schema, tables: this, ...options });
     }
     toJSON() {
         let tables = [];
@@ -19,10 +31,11 @@ export default new class {
     toString() {
         return JSON.stringify(this.toJSON());
     }
-    fromJSON(array) {
-        this.set([]);
+    fromJSON(array, apply = true) {
+        const self = apply ? this : new Tables();
+        self.set([]);
         array.forEach(obj => {
-            const newTable = this.createTable(obj.name, { ...obj, fields: [] });
+            const newTable = self.createTable(obj.name, { ...obj, fields: [] });
             newTable.self = {
                 ...newTable.self,
                 fields: obj.fields.map(field => {
@@ -30,7 +43,7 @@ export default new class {
                 })
             }
         });
-        this.update(tables => {
+        self.update(tables => {
             tables.forEach(({ self: table }) => {
                 const obj = array.find(o => o.id === table.id);
                 obj.fields.forEach((objfield, index) => {
@@ -42,7 +55,8 @@ export default new class {
                 })
             });
             return tables;
-        })
+        });
+        return self;
     }
 };
 
