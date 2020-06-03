@@ -133,38 +133,56 @@
         link.download = `${schema_name}_edit_${Date.now()}.sql`;
         link.click();
       }
-    } else if (e.ctrlKey && !e.shiftKey) {
-      if (e.key === "1") $mode = "create";
-      else if (e.key === "2") $mode = "edit";
-      else if (e.key === "3") $mode = "migration";
+    } else if (e.ctrlKey && !e.altKey) {
       e.preventDefault();
+      switch (e.key) {
+        case "1":
+          $mode = "create";
+          break;
+        case "2":
+          $mode = "edit";
+          break;
+        case "3":
+          $mode = "migration";
+          break;
+      }
+    } else if (e.ctrlKey && e.altKey) {
+      e.preventDefault();
+      switch (e.key) {
+        case "1":
+          localStorage.setItem("create_tables", tables.toString());
+          break;
+        case "2":
+          localStorage.setItem("edit_tables", tables.toString());
+          break;
+        case "3":
+          console.log("migration");
+          localStorage.setItem("migration_tables", tables.toString());
+          break;
+      }
     }
   }
   function switchMode() {
     switch ($mode) {
       case "create":
+        if (!localStorage.getItem("create_tables"))
+          localStorage.setItem("create_tables", "[]");
         $tables = tables
-          .fromJSON(JSON.parse(localStorage.getItem("create_tables")) || [])
+          .fromJSON(JSON.parse(localStorage.getItem("create_tables")))
           .read();
         break;
       case "edit":
+        if (!localStorage.getItem("edit_tables"))
+          localStorage.setItem("edit_tables", tables.toString());
         $tables = tables
-          .fromJSON(
-            JSON.parse(
-              localStorage.getItem("edit_tables") ||
-                localStorage.getItem("create_tables")
-            )
-          )
+          .fromJSON(JSON.parse(localStorage.getItem("edit_tables")))
           .read();
         break;
       case "migration":
+        if (!localStorage.getItem("migration_tables"))
+          localStorage.setItem("migration_tables", tables.toString());
         $tables = tables
-          .fromJSON(
-            JSON.parse(
-              localStorage.getItem("migration_tables") ||
-                localStorage.getItem("create_tables")
-            )
-          )
+          .fromJSON(JSON.parse(localStorage.getItem("migration_tables")))
           .read();
         break;
     }
