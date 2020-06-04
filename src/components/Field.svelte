@@ -57,6 +57,7 @@
   }
   $: if ($field.name.match(/\s/g)) {
     $field.name = $field.name.replace(/\s/g, "");
+    $editorElement && render($editorElement)();
   }
 </script>
 
