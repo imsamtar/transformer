@@ -21,6 +21,8 @@
         pos: [300, 200]
       });
       e.preventDefault();
+    } else if (e.ctrlKey && e.key.toLowerCase() === "b") {
+      editor = !editor;
     }
   }
   function schema({ schema }) {
@@ -214,9 +216,6 @@
 </script>
 
 <style>
-  main {
-    text-align: center;
-  }
   main > button {
     position: absolute;
     right: 2rem;
@@ -225,36 +224,28 @@
     font-size: 1rem;
     border: 0;
     outline: none;
-    background: #888;
+    background: var(--table-bg);
     color: white;
     border-radius: 10px;
-    box-shadow: 2px 2px 10px #888;
+    box-shadow: 2px 2px 10px var(--table-bg);
     font-weight: bold;
   }
-  main > button:hover {
-    background: #666;
-  }
-  main > #mode::before {
-    content: "mode";
-    background: var(--dark);
-    color: #eee;
-    padding: 0.3rem;
-  }
-  #mode:hover {
-    --dark: #666;
+  main > button.active {
+    background: var(--table-bg-active);
   }
   #mode {
     position: relative;
     top: 10px;
+    left: 10px;
+    align-self: left;
     font-weight: bold;
     border-radius: 0.2rem;
-    --dark: #888;
-  }
-  #mode::after {
-    content: attr(data-value);
     background: #eee;
-    color: var(--dark);
+    color: #666;
     padding: 0.3rem;
+    display: inline-block;
+    width: 1rem;
+    text-align: center;
   }
 </style>
 
@@ -275,6 +266,8 @@
     <Table {table} />
   {/each}
   <Menu />
-  <button on:click={() => (editor = !editor)}>&lt;/&gt;</button>
-  <span id="mode" data-value={$mode} />
+  <button class:active={editor} on:click={() => (editor = !editor)}>
+    &lt;/&gt;
+  </button>
+  <span id="mode">{$mode[0]}</span>
 </main>

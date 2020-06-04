@@ -5,10 +5,10 @@
   import { render, editorElement } from "./Editor.svelte";
   export let table;
 
-  let autofocus = false;
+  let table_name;
   let element;
 
-  onMount(() => (autofocus = true));
+  onMount(() => table_name.focus());
 
   function mouseover(e) {
     $table.active = true;
@@ -49,8 +49,8 @@
   $: tables = $table.tables;
 
   function keyup(e) {
-    if (e.key.toLowerCase() === "enter") {
-      table.createField("");
+    if (e.key.toLowerCase() === "enter" && e.target.value) {
+      table.createField("", { pk: !$table.fields.length });
       const last = element.offsetTop + element.offsetHeight;
       if (last > innerHeight - 100)
         $tables.forEach(_table => {
@@ -109,6 +109,7 @@
   h3 {
     cursor: grab;
     margin: calc(var(--table-margin) * 2) 0;
+    text-align: center;
   }
   h3 > input {
     border: 0;
@@ -136,7 +137,7 @@
   on:mouseleave={mouseleave}
   style="left: {$table.pos[0]}px;top: {$table.pos[1]}px">
   <h3>
-    <input type="text" bind:value={$table.name} />
+    <input type="text" bind:value={$table.name} bind:this={table_name} />
   </h3>
   {#each $table.fields as field}
     <Field {field} />

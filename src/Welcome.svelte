@@ -1,11 +1,13 @@
 <script>
   import { project_opened } from "./App.svelte";
+  import { mode } from "./stores/tables";
 
   let files;
   let disabled;
 
   async function change(file) {
     try {
+      $mode = "create";
       const minified = JSON.stringify(JSON.parse(await file.text()));
       localStorage.setItem("hasura_metadata", minified);
       disabled = false;
