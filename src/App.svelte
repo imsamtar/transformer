@@ -134,29 +134,32 @@
         link.click();
       }
     } else if (e.ctrlKey && !e.altKey) {
-      e.preventDefault();
       switch (e.key) {
         case "1":
+          e.preventDefault();
           $mode = "create";
           break;
         case "2":
+          e.preventDefault();
           $mode = "edit";
           break;
         case "3":
+          e.preventDefault();
           $mode = "migration";
           break;
       }
     } else if (e.ctrlKey && e.altKey) {
-      e.preventDefault();
       switch (e.key) {
         case "1":
+          e.preventDefault();
           localStorage.setItem("create_tables", tables.toString());
           break;
         case "2":
+          e.preventDefault();
           localStorage.setItem("edit_tables", tables.toString());
           break;
         case "3":
-          console.log("migration");
+          e.preventDefault();
           localStorage.setItem("migration_tables", tables.toString());
           break;
       }
