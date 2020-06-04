@@ -166,37 +166,33 @@
     }
   }
   function switchMode() {
-    switch ($mode) {
-      case "create":
-        if (!localStorage.getItem("create_tables"))
-          localStorage.setItem("create_tables", "[]");
-        $tables = tables
-          .fromJSON(JSON.parse(localStorage.getItem("create_tables")))
-          .read();
-        break;
-      case "edit":
-        if (!localStorage.getItem("edit_tables"))
-          localStorage.setItem("edit_tables", tables.toString());
-        $tables = tables
-          .fromJSON(JSON.parse(localStorage.getItem("edit_tables")))
-          .read();
-        break;
-      case "migration":
-        if (!localStorage.getItem("migration_tables"))
-          localStorage.setItem("migration_tables", tables.toString());
-        $tables = tables
-          .fromJSON(JSON.parse(localStorage.getItem("migration_tables")))
-          .read();
-        break;
+    if (!editor || $editorElement) {
+      switch ($mode) {
+        case "create":
+          if (!localStorage.getItem("create_tables"))
+            localStorage.setItem("create_tables", "[]");
+          $tables = tables
+            .fromJSON(JSON.parse(localStorage.getItem("create_tables")))
+            .read();
+          break;
+        case "edit":
+          if (!localStorage.getItem("edit_tables"))
+            localStorage.setItem("edit_tables", tables.toString());
+          $tables = tables
+            .fromJSON(JSON.parse(localStorage.getItem("edit_tables")))
+            .read();
+          break;
+        case "migration":
+          if (!localStorage.getItem("migration_tables"))
+            localStorage.setItem("migration_tables", tables.toString());
+          $tables = tables
+            .fromJSON(JSON.parse(localStorage.getItem("migration_tables")))
+            .read();
+          break;
+      }
     }
   }
-  $: if (!editor || $editorElement) {
-    switchMode($mode);
-    editor && render($editorElement)();
-  }
-  function toggleEditor(e) {
-    editor = !editor;
-  }
+  $: switchMode($mode);
 
   const saved = localStorage.getItem(`${$mode}_tables`);
 
@@ -207,8 +203,6 @@
 <style>
   main {
     text-align: center;
-    background: var(--bg);
-    width: 70%;
   }
   main > button {
     position: absolute;
@@ -237,10 +231,8 @@
     --dark: #666;
   }
   #mode {
-    position: absolute;
+    position: relative;
     top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
     font-weight: bold;
     border-radius: 0.2rem;
     --dark: #888;
@@ -263,12 +255,13 @@
   on:contextmenu|preventDefault={mainMenu}
   on:mousemove={mouseMove}
   on:touchmove={touchMove}
-  on:touchstart={touchStart}>
+  on:touchstart={touchStart}
+  style="width: {editor ? 70 : 100}%;">
   <Link {tables} />
   {#each $tables as table}
     <Table {table} />
   {/each}
   <Menu />
-  <button on:click={toggleEditor}>&lt;/&gt;</button>
-  <span id="mode" data-value={$mode} style={editor ? 'left:65%;' : ''} />
+  <button on:click={() => (editor = !editor)}>&lt;/&gt;</button>
+  <span id="mode" data-value={$mode} />
 </main>
