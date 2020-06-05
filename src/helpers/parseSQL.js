@@ -1,6 +1,6 @@
 export default function (sql) {
     let tables = [];
-    let regexp = /CREATE\s+TABLE\s+(\w+).(\w+)\s+\((\s+(.*)\s+)*\);/g;
+    let regexp = /CREATE\s+TABLE\s+\"?(\w+)\"?.\"?(\w+)\"?\s+\((\s+(.*)\s+)*\);/g;
     let matches = Array.from(sql.matchAll(regexp));
     matches.forEach((match, id) => {
         let fields = [];
@@ -16,7 +16,7 @@ export default function (sql) {
         tables.push(table);
     });
 
-    regexp = /ALTER\s+TABLE\s+ONLY\s+(\w+).(\w+)\s+ADD.*;/g;
+    regexp = /ALTER\s+TABLE\s+ONLY\s+\"?(\w+)\"?.\"?(\w+)\"?\s+ADD.*;/g;
     matches = Array.from(sql.matchAll(regexp));
     matches.forEach(match => {
         const table = tables.find(table => table.schema === match[1] && table.name === match[2]);
@@ -29,7 +29,7 @@ export default function (sql) {
                     if (field) field.pk = true;
                 });
             }
-            part = Array.from(match[0].matchAll(/FOREIGN KEY \((\w+)\) REFERENCES (\w+).(\w+)\((\w+)\)/g));
+            part = Array.from(match[0].matchAll(/FOREIGN KEY \(\"?(\w+)\"?\) REFERENCES \"?(\w+)\"?.\"?(\w+)\"?\(\"?(\w+)\"?\)/g));
             if (part.length) {
                 const field = table.fields.find(f => f.name === part[0][1]);
                 if (field) {
