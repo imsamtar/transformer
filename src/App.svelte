@@ -6,12 +6,14 @@
 <script>
   import Welcome from "./Welcome.svelte";
   import Main from "./Main.svelte";
+  import tables from "./stores/tables";
 
   function keyup(e) {
     if (e.key.toLowerCase() === "delete" && e.ctrlKey) {
       e.preventDefault();
       localStorage.clear();
       $project_opened = false;
+      $tables = [];
     }
   }
 
