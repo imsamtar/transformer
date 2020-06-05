@@ -1,9 +1,14 @@
 <script>
   import { project_opened } from "./App.svelte";
   import { mode } from "./stores/tables";
+  import tables from "./stores/tables";
+  import parseSQL from "./helpers/parseSQL";
 
   let files;
   let disabled;
+  let endpoint;
+  let secret;
+  let schema = "public";
 
   async function change(file) {
     try {
@@ -13,6 +18,41 @@
       disabled = false;
     } catch (err) {
       disabled = true;
+    }
+  }
+  async function submit() {
+    if (endpoint && secret) {
+      try {
+        endpoint = new URL(endpoint).origin;
+        let response = await fetch(`${endpoint}/v1alpha1/pg_dump`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Hasura-Role": "admin",
+            "x-hasura-admin-secret": secret
+          },
+          body: JSON.stringify({
+            opts: ["-O", "-x", "--schema-only", "--schema", schema],
+            clean_output: true
+          })
+        });
+        response = await response.text();
+        try {
+          response = JSON.parse(response);
+          console.error(response.code);
+        } catch ({}) {
+          localStorage.setItem(
+            "create_tables",
+            JSON.stringify(parseSQL(response))
+          );
+          $project_opened = true;
+        }
+      } catch (err) {
+        console.log(err.message);
+        $project_opened = false;
+      }
+    } else {
+      $project_opened = true;
     }
   }
 
@@ -42,6 +82,9 @@
     color: white;
     padding: 1rem;
   }
+  h2 {
+    text-align: center;
+  }
   fieldset {
     border: 0;
     display: flex;
@@ -49,14 +92,17 @@
     padding: 0;
   }
   label {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-family: sans-serif;
-    margin: 0.5rem 0 0.2rem 0;
+    margin: 1rem 0 0.2rem 0;
   }
-  input {
+  input:not([type="checkbox"]) {
     background: #eeeeee22;
+    color: white;
     font-size: 1rem;
     padding: 0.3rem;
+    width: 97%;
+    border: 0;
   }
   button {
     outline: none;
@@ -69,9 +115,12 @@
     padding: 0.5rem;
     text-shadow: 1px 1px 3px #5d5d5d;
   }
+  button:hover {
+    filter: brightness(0.95);
+  }
   button:disabled {
     background: red;
-    opacity: 0.2;
+    opacity: 0.4;
   }
   @media screen and (max-width: 600px) {
     #center {
@@ -82,14 +131,20 @@
 </style>
 
 <main>
-  <div id="center">
+  <form id="center" on:submit|preventDefault={submit}>
     <div id="upper">
       <h2>Start a new project</h2>
       <fieldset>
-        <label for="name">Select metadata file</label>
+        <label for="url">Hasura endpoint</label>
+        <input type="url" bind:value={endpoint} />
+        <label for="password">Admin secret</label>
+        <input type="password" bind:value={secret} required={!!endpoint} />
+        <label for="schema">Schema name</label>
+        <input type="schema" bind:value={schema} required={!!endpoint} />
+        <label for="name">Choose metadata file</label>
         <input type="file" bind:files />
       </fieldset>
     </div>
-    <button {disabled} on:click={() => ($project_opened = true)}>Start</button>
-  </div>
+    <button type="submit" disabled={disabled || (endpoint && !secret)}>Start</button>
+  </form>
 </main>
