@@ -162,7 +162,8 @@
           ed = monaco.editor.create(editorNode, {
             value: [newText].join("\n"),
             theme: "vs-dark",
-            language: "sql"
+            language: "sql",
+            automaticLayout: true
           });
           ed.onKeyUp(keyup);
           return ed;
@@ -183,11 +184,9 @@
 <style>
   .editor {
     width: 30%;
-    background: orange;
     z-index: 100;
+    height: 100vh;
   }
 </style>
-
-<svelte:window on:resize={render(editorNode, true)} />
 
 <div id="editor" class="editor" bind:this={editorNode} />
