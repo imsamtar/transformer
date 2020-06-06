@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from "svelte";
   import tables, { mode } from "./stores/tables";
   import Table from "./components/Table.svelte";
   import Menu from "./components/Menu.svelte";
@@ -9,6 +10,8 @@
   import Editor, { render, editorElement } from "./components/Editor.svelte";
 
   let editor = !!JSON.parse(localStorage.getItem("editor"));
+
+  onMount(() => setTimeout(() => $tables = $tables, 10));
 
   function mainMenu(e) {
     $menus.pos = [e.x, e.y];
@@ -36,6 +39,12 @@
       sql += `\nCREATE TABLE ${schema({ schema: schema_name })}"${
         table.name
       }" (${table.fields.map((f, i) => {
+        if (f.constraints.find(c => c.toLowerCase() === "null")) {
+          f.constraints = [
+            ...f.constraints.filter(c => c !== "null"),
+            "not null"
+          ];
+        }
         return `\n  "${f.name}" ${f.type.toUpperCase()}${f.constraints.reduce(
           (r, c) => `${r} ${c.toUpperCase()}`,
           ""

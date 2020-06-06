@@ -28,7 +28,12 @@
           .replace(/\s*to\s*/, " to ")
           .replace(/\s*or\s*/, " or ")}> ${table.name}.${field.name}`;
       }
-      const constraints = [...field.constraints];
+      let constraints = [...field.constraints];
+      let notNull = constraints.find(c => c.toLowerCase() === "not null");
+      if (notNull)
+        constraints = constraints.filter(c => c.toLowerCase() !== "not null");
+      else constraints.push("null");
+      constraints = Array.from(new Set(constraints));
       field.ref && constraints.unshift("fk");
       field.pk && constraints.unshift("pk");
       return `${i ? "\n\t" : ""}${field.name} ${field.type}${constraints.map(
@@ -84,6 +89,10 @@
                 .split(/\s*,\s*/);
               result = [...result, ...constraints];
             }
+            if (!result.find(c => c.toLowerCase() === "null"))
+              result.push("not null");
+            else result = result.filter(c => c.toLowerCase() !== "null");
+            result = Array.from(new Set(result));
             let field = {
               id,
               name: result[0],
