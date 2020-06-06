@@ -8,7 +8,15 @@
   let table_name;
   let element;
 
-  onMount(() => table_name.focus());
+  onMount(() => {
+    if (
+      table_name.offsetLeft + table_name.offsetParent.offsetLeft + 200 >
+        innerWidth &&
+      table_name.offsetTop + table_name.offsetParent.offsetTop + 50 >
+        innerHeight
+    )
+      table_name.focus();
+  });
 
   function mouseover(e) {
     $table.active = true;
