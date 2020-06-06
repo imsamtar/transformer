@@ -229,8 +229,9 @@
     border-radius: 10px;
     box-shadow: 2px 2px 10px var(--table-bg);
     font-weight: bold;
+    z-index: calc(var(--table-z-index) + 2);
   }
-  main > button.active {
+  button.active {
     background: var(--table-bg-active);
   }
   #mode {
@@ -246,6 +247,7 @@
     display: inline-block;
     width: 1rem;
     text-align: center;
+    z-index: calc(var(--table-z-index) + 2);
   }
 </style>
 

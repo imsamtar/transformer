@@ -183,8 +183,9 @@
 
 <style>
   .editor {
-    width: 30%;
     z-index: 100;
+    width: 30%;
+    min-width: 520px;
     height: 100vh;
   }
 </style>
