@@ -9,6 +9,7 @@
   let endpoint;
   let secret;
   let schema = "public";
+  let pending = false;
 
   async function change(file) {
     try {
@@ -20,8 +21,23 @@
       disabled = true;
     }
   }
+  async function fetchMetadata() {
+    let response = await fetch(`${endpoint}/v1/query`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Hasura-Role": "admin",
+        "x-hasura-admin-secret": secret
+      },
+      body: JSON.stringify({ type: "export_metadata", args: {} })
+    });
+    response = await response.json();
+    if (response.tables)
+      localStorage.setItem("hasura_metadata", JSON.stringify(response));
+  }
   async function submit() {
     if (endpoint && secret) {
+      pending = true;
       try {
         endpoint = new URL(endpoint).origin;
         let response = await fetch(`${endpoint}/v1alpha1/pg_dump`, {
@@ -39,26 +55,24 @@
         response = await response.text();
         try {
           response = JSON.parse(response);
-          console.error(response.code);
+          console.error(response.error);
         } catch ({}) {
           localStorage.setItem(
             "create_tables",
             JSON.stringify(parseSQL(response))
           );
+          await fetchMetadata();
           $project_opened = true;
         }
       } catch (err) {
-        console.log(err.message);
+        console.error(err.message);
         $project_opened = false;
       }
+      pending = false;
     } else {
       $project_opened = true;
     }
   }
-
-  $: if (files && files.length) {
-    change(files[0]);
-  } else disabled = false;
 </script>
 
 <style>
@@ -101,7 +115,8 @@
     color: white;
     font-size: 1rem;
     padding: 0.3rem;
-    width: 97%;
+    width: 300px;
+    max-width: calc(100vw - 3rem);
     border: 0;
   }
   button {
@@ -122,12 +137,6 @@
     background: red;
     opacity: 0.4;
   }
-  @media screen and (max-width: 600px) {
-    #center {
-      width: 100%;
-      border-radius: 0;
-    }
-  }
 </style>
 
 <main>
@@ -141,10 +150,10 @@
         <input type="password" bind:value={secret} required={!!endpoint} />
         <label for="schema">Schema name</label>
         <input type="schema" bind:value={schema} required={!!endpoint} />
-        <label for="name">Choose metadata file</label>
-        <input type="file" bind:files />
       </fieldset>
     </div>
-    <button type="submit" disabled={disabled || (endpoint && !secret)}>Start</button>
+    <button type="submit" disabled={disabled || (endpoint && !secret)}>
+      {pending ? '...' : 'Start'}
+    </button>
   </form>
 </main>
