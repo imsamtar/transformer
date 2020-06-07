@@ -2,7 +2,8 @@
   import { onMount } from "svelte";
   import { menus } from "../stores/menus";
   import Field from "./Field.svelte";
-  import { render, editorElement } from "./Editor.svelte";
+  import { editorElement } from "./Editor.svelte";
+  import render from "../helpers/editor/render";
   export let table;
 
   let table_name;

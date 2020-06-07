@@ -3,7 +3,8 @@
   import { menus } from "../stores/menus";
   import { selectedField } from "../stores/tables";
   import { addRef } from "../helpers/index";
-  import { render, editorElement } from "./Editor.svelte";
+  import { editorElement } from "./Editor.svelte";
+  import render from "../helpers/editor/render";
 
   export let field;
   let element;
