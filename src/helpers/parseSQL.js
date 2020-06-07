@@ -1,20 +1,23 @@
+import Shape from "./classes/Shape";
+
 export default function (sql) {
     let tables = [];
     let regexp = /CREATE\s+TABLE\s+\"?(\w+)\"?.\"?(\w+)\"?\s+\((\s+(.*)\s+)*\);/g;
     let matches = Array.from(sql.matchAll(regexp));
-    matches.forEach((match, id) => {
+    matches.forEach((match, tindex) => {
+        let id = Shape.genId();
         let fields = [];
         let fieldMatches = match[0].match(/(\w.+)/g).filter(l => !l.startsWith("CREATE TABLE")).map(l => l.slice(-1) === "," ? l.slice(0, -1) : l);
-        fieldMatches.forEach((match, fid) => {
+        fieldMatches.forEach((match) => {
             if (!match.startsWith('CONSTRAINT')) {
                 let parts = match.match(/(\'.*\'[^\s]*)|(NOT\s+\w+)|(with\stime\szone)|([\w\(\)]+)/g);
                 const def = parts.findIndex(p => p === "DEFAULT");
                 const constraints = def > -1 ? parts.slice(2, def) : parts.slice(2);
-                let field = { id: fid, table: id, name: parts[0], type: parts[1], constraints }
+                let field = { id: Shape.genId(), table: id, name: parts[0], type: parts[1], constraints }
                 fields.push(field);
             }
         });
-        let table = { id, name: match[2], schema: match[1], pos: [600 + id * 300, 150], fields };
+        let table = { id: id, name: match[2], schema: match[1], pos: [600 + tindex * 300, 150], fields };
         tables.push(table);
     });
 

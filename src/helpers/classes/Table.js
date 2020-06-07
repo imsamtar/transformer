@@ -2,16 +2,9 @@ import Shape from "./Shape";
 import tables from "../../stores/tables";
 import TableField, { getID } from "./TableField";
 
-export function get_table_id() {
-    let id = 0;
-    tables.subscribe(__tables => id = getID(__tables.map(t => t.self)))();
-    return id;
-}
-
 export default class Table extends Shape {
     constructor(name, options) {
         super(name, {
-            id: get_table_id(),
             schema: "public",
             fields: [],
             tables,

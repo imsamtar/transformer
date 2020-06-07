@@ -1,15 +1,8 @@
 import Shape from "./Shape";
 
-export function getID(array) {
-    let id = 0;
-    array.forEach(_ => id = (_.id >= id) ? _.id + 1 : id);
-    return id;
-}
-
 export default class TableField extends Shape {
     constructor(name, options = {}) {
         super(name, {
-            id: getID(options.table.self.fields.map(f => f.self)),
             type: "int",
             constraints: [],
             ref: null,
