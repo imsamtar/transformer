@@ -2,6 +2,7 @@
   import { writable } from "svelte/store";
   import * as monaco from "monaco-editor";
   import tables from "../stores/tables.js";
+  import Shape from "../helpers/classes/Shape";
 
   export const editorElement = writable(null);
   const text = writable("");
@@ -22,17 +23,16 @@
         refField = refTable.fields.find(
           _field => _field.id === field.ref.field
         );
-        ref += `\nref: ${refTable.name}.${
-          refField.name
-        } <${field.refType
-          .replace(/\s*to\s*/, " to ")
-          .replace(/\s*or\s*/, " or ")}> ${table.name}.${field.name}`;
+        if (refField)
+          ref += `\nref: ${refTable.name}.${
+            refField.name
+          } <${field.refType
+            .replace(/\s*to\s*/, " to ")
+            .replace(/\s*or\s*/, " or ")}> ${table.name}.${field.name}`;
       }
-      let constraints = [...field.constraints];
-      let notNull = constraints.find(c => c.toLowerCase() === "not null");
-      if (notNull)
-        constraints = constraints.filter(c => c.toLowerCase() !== "not null");
-      else constraints.push("null");
+      let constraints = field.constraints.filter(
+        c => c.toLowerCase() !== "not null"
+      );
       constraints = Array.from(new Set(constraints));
       field.ref && constraints.unshift("fk");
       field.pk && constraints.unshift("pk");
@@ -60,41 +60,42 @@
     else schema = "public";
 
     (text.match(/Table[\s]+[\w]+[\s]*{[\s\w\[\],]+}/g) || []).forEach(
-      (table, i) => {
+      (table, tableIndex) => {
+        const tableId = Shape.genId();
         const tableName = table
           .match(/Table[\s]+[\w]+/g)[0]
           .replace(/Table /, "");
-        result[i] = {
-          id: i,
+        result[tableIndex] = {
+          id: tableId,
           name: tableName,
           schema,
           pos: [
-            (innerWidth * 0.32 + (i % 4) * 300) % innerWidth,
-            50 + parseInt(i / 4) * 300
+            (innerWidth * 0.32 + (tableIndex % 4) * 300) % innerWidth,
+            50 + parseInt(tableIndex / 4) * 300
           ],
           fields: (
             table.replace(/.+{|}/g, "").match(/\w.+(\]|,|\n)/g) || []
-          ).map((line, id) => {
+          ).map((line, fieldIndex) => {
+            const fieldId = Shape.genId();
             let result = [];
             line = line.replace(/,$/, "");
             result = line
               .match(/\w+[\w\s]*/)[0]
               .split(/\s+/)
               .filter(x => x);
+            result.length < 2 && result.push("int");
             let constraints;
             if ((constraints = line.match(/\[.*\]/g))) {
               constraints = constraints[0]
                 .match(/\w[\w\s,]*\w/)[0]
                 .replace(/\s+/g, " ")
                 .split(/\s*,\s*/);
-              result = [...result, ...constraints];
-            }
-            if (!result.find(c => c.toLowerCase() === "null"))
-              result.push("not null");
-            else result = result.filter(c => c.toLowerCase() !== "null");
-            result = Array.from(new Set(result));
+              if (!constraints.find(c => c === "null"))
+                constraints.push("not null");
+              result = [...result, ...Array.from(new Set(constraints))];
+            } else result.push("not null");
             let field = {
-              id,
+              id: fieldId,
               name: result[0],
               pk: !!result.find(word => word === "pk"),
               constraints: result.filter(
@@ -143,16 +144,62 @@
     if (e.browserEvent.key.toLowerCase() === "control") {
       editor.subscribe(editor => {
         try {
+          let old_scores = [];
           let old_tables = tables.toJSON();
           let new_tables = toJSON(editor.getValue());
-          new_tables = new_tables.map(nt => {
-            const ot = old_tables.find(ot => ot.name === nt.name);
-            if (ot) nt.pos = ot.pos;
+          new_tables = new_tables.map((nt, nIndex) => {
+            const otScores = [];
+            old_tables.forEach((ot, oIndex) => {
+              let points = 0;
+              if (ot.name === nt.name) points += 2;
+              else points -= 2;
+              ot.fields.forEach((of, oi) => {
+                let plus_points = 0;
+                const foundField = nt.fields.find((nf, ni) => {
+                  if (oi === ni && nf.name === of.name) plus_points++;
+                  if (nf.pk && of.pk) plus_points++;
+                  if (nf.ref && of.ref) plus_points++;
+                  return nf.name === of.name;
+                });
+                if (foundField) points += 1;
+                else points -= 1;
+                points += plus_points;
+              });
+              otScores.push(points);
+            });
+            old_scores.push(otScores);
             return nt;
+          });
+          old_scores = old_scores
+            .map(oscore => {
+              const max = Math.max(...oscore);
+              return {
+                score: max,
+                old: oscore.indexOf(max)
+              };
+            })
+            .reduce((result, score, index) => {
+              if (!result[score.old] || result[score.old].score < score.score)
+                result[score.old] = {
+                  score: score.score,
+                  new: index
+                };
+              return result;
+            }, [])
+            .map(t => t.new);
+          old_scores.forEach((ni, oi) => {
+            new_tables.forEach(ntable => {
+              ntable.fields.forEach(f => {
+                if (f.ref && f.ref.table === new_tables[ni].id)
+                  f.ref.table = old_tables[oi].id;
+              });
+            });
+            new_tables[ni].id = old_tables[oi].id;
+            new_tables[ni].pos = old_tables[oi].pos;
           });
           tables.fromJSON(new_tables);
         } catch (err) {
-          console.error(err.message);
+          console.error(err);
         }
       })();
       e.preventDefault();
