@@ -4,7 +4,7 @@ import tables from "../stores/tables";
 const position = writable([0, 0]);
 const timer = writable(0);
 
-export function mouseMove(e) {
+export function mouse_move(e) {
     if (e.ctrlKey && !e.shiftKey && !e.altKey) {
         timer.update(timer => {
             clearTimeout(timer);
@@ -22,10 +22,10 @@ export function mouseMove(e) {
         });
     }
 }
-export function touchStart(e) {
+export function touch_start(e) {
     position.update(pos => [e.touches[0].clientX, e.touches[0].clientY]);
 }
-export function touchMove(e) {
+export function touch_move(e) {
     position.update(pos => {
         if (pos[0] !== 0 && pos[1] !== 0) {
             const diff = [

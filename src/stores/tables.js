@@ -2,7 +2,7 @@ import { writable } from "svelte/store";
 import Custom from "./definations/Custom";
 import Table from "../helpers/classes/Table";
 
-export const mode = Custom("create");
+export const mode = new Custom("create");
 
 export default new class Tables {
     constructor() {

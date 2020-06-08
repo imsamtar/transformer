@@ -1,8 +1,9 @@
 import { writable } from "svelte/store";
+import Custom from "./definations/Custom";
 import * as helpers from "../helpers/";
 import tables from "./tables";
 
-export const menus = writable({
+export const menus = new Custom({
     all: {
         main: {
             create_table: {

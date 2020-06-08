@@ -5,191 +5,86 @@
   import Menu from "./components/Menu.svelte";
   import Link from "./components/Link/Link.svelte";
   import { createTable } from "./helpers/table";
-  import { menus } from "./stores/menus";
-  import { mouseMove, touchStart, touchMove } from "./helpers/navigate.js";
+  import { main_menu } from "./stores/index";
+  import { key_shortcut, download_file } from "./helpers/events/index";
+  import to_sql from "./helpers/sql/to_sql";
+  import changes_to_sql from "./helpers/sql/changes_to_sql";
+  import { mouse_move, touch_start, touch_move } from "./helpers/navigate.js";
   import Editor, { render, editorElement } from "./components/Editor.svelte";
 
   let editor = !!JSON.parse(localStorage.getItem("editor"));
 
-  onMount(() => setTimeout(() => $tables = $tables, 10));
+  onMount(() => setTimeout(() => ($tables = $tables), 10));
 
-  function mainMenu(e) {
-    $menus.pos = [e.x, e.y];
-    if (!$menus.shown) $menus.shown = "main";
-  }
-
-  function keyup(e) {
-    if (e.shiftKey && e.ctrlKey && e.key.toLowerCase() === "a") {
+  function keyup(event) {
+    key_shortcut("!a:sc", event, () =>
       tables.createTable("", {
         pos: [300, 200]
-      });
-      e.preventDefault();
-    } else if (e.ctrlKey && e.key.toLowerCase() === "b") {
-      editor = !editor;
-    }
+      })
+    );
+    key_shortcut("!b:c", event, () => (editor = !editor));
   }
-  function schema({ schema }) {
-    return schema === "public" ? "" : `"${schema}".`;
-  }
-  function toSQL(_tables, options = {}) {
-    let schema_name = "public";
-    let sql = "";
-    _tables.forEach(table => {
-      schema_name = options.schema || table.schema;
-      sql += `\nCREATE TABLE ${schema({ schema: schema_name })}"${
-        table.name
-      }" (${table.fields.map((f, i) => {
-        if (f.constraints.find(c => c.toLowerCase() === "null")) {
-          f.constraints = [
-            ...f.constraints.filter(c => c !== "null"),
-            "not null"
-          ];
-        }
-        return `\n  "${f.name}" ${f.type.toUpperCase()}${f.constraints.reduce(
-          (r, c) => `${r} ${c.toUpperCase()}`,
-          ""
-        )}`;
-      })},\n  PRIMARY KEY (${table.fields
-        .filter(f => f.pk)
-        .map(f => `"${f.name}"`)})
-);\n`;
-    });
-    _tables.forEach(table => {
-      table.fields.forEach(f => {
-        let statement = "";
-        if (f.ref) {
-          const refTable = (options.tables || _tables).find(
-            t => t.id === f.ref.table
-          );
-          const refField =
-            refTable && refTable.fields.find(fd => fd.id === f.ref.field);
-          if (refField)
-            statement += `\nALTER TABLE ${schema({ schema: schema_name })}"${
-              table.name
-            }" ADD FOREIGN KEY ("${f.name}") REFERENCES ${schema({
-              schema: schema_name
-            })}"${refTable.name}" ("${refField.name}");\n`;
-        }
-        sql += statement;
+
+  function keydown(event) {
+    key_shortcut("!e:c", event, () => {
+      download_file(tables.toString(), "config.json", {
+        type: "application/json"
       });
     });
-    return { sql, schema_name };
-  }
-  function keydown(e) {
-    if (e.ctrlKey && e.key.toLowerCase() === "e") {
-      e.preventDefault();
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(
-        new Blob([tables.toString()], { type: "application/json" })
-      );
-      link.download = "config.json";
-      link.click();
-    } else if (e.key === "i" && e.ctrlKey) {
+    key_shortcut("!i:c", event, () => {
       const choosefile = document.createElement("input");
       choosefile.type = "file";
       choosefile.click();
       choosefile.onchange = async function(e) {
         tables.fromJSON(JSON.parse(await choosefile.files[0].text()));
       };
-    } else if (e.key === "s" && e.ctrlKey) {
-      e.preventDefault();
+    });
+    key_shortcut("!s:c", event, () => {
       localStorage.setItem(`${$mode}_tables`, tables.toString());
-    } else if (e.key === "o" && e.ctrlKey && $mode === "create") {
-      e.preventDefault();
-      let { sql, schema_name } = toSQL(tables.toJSON());
+    });
+    key_shortcut("!1:c", event, () => ($mode = "create"));
+    key_shortcut("!2:c", event, () => ($mode = "edit"));
+    key_shortcut("!3:c", event, () => ($mode = "migration"));
 
+    key_shortcut("!1:ca", event, () =>
+      localStorage.setItem("create_tables", tables.toString())
+    );
+    key_shortcut("!2:ca", event, () =>
+      localStorage.setItem("edit_tables", tables.toString())
+    );
+    key_shortcut("!3:ca", event, () =>
+      localStorage.setItem("migration_tables", tables.toString())
+    );
+    key_shortcut("!o:c", event, () => {
+      let { sql, schema_name } = to_sql(tables.toJSON());
       if (schema_name !== "public")
         sql = `CREATE SCHEMA IF NOT EXISTS "${schema_name}";\n${sql}`;
       sql = sql[0] === "\n" ? sql.substr(1) : sql;
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(
-        new Blob([sql], { type: "application/text" })
-      );
-      link.download = `${schema_name}_${Date.now()}.sql`;
-      link.click();
-    } else if (e.key === "o" && e.ctrlKey && $mode === "edit") {
-      e.preventDefault();
-      let sql = "";
-      let schema_name = "public";
-      const otables = JSON.parse(localStorage.getItem("create_tables"));
-      const etables = tables.toJSON();
-      etables.forEach(etable => {
-        const otable = otables.find(otable => otable.id === etable.id);
-        if (otable) {
-          schema_name = otable.schema;
-          etable.fields.forEach(efield => {
-            const ofield = otable.fields.find(
-              ofield => ofield.id === efield.id
-            );
-            if (!ofield) {
-              sql += `ALTER TABLE ${schema({ schema: schema_name })}"${
-                otable.name
-              }" ADD "${efield.name}" ${efield.type.toUpperCase()}${
-                efield.pk ? " PRIMARY KEY" : ""
-              }${efield.constraints.reduce(
-                (r, c) => `${r} ${c.toUpperCase()}`,
-                ""
-              )};\n`;
-            }
+      switch ($mode) {
+        case "create":
+          download_file(sql, `${schema_name}_${Date.now()}.sql`, {
+            type: "application/text"
           });
-        } else {
-          sql += toSQL([etable], { schema: schema_name, tables: otables }).sql;
-        }
-      });
-      if (sql) {
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(
-          new Blob([sql], { type: "application/text" })
-        );
-        link.download = `${schema_name}_edit_${Date.now()}.sql`;
-        link.click();
-      }
-    } else if (e.key === "o" && e.ctrlKey && $mode === "migration") {
-      e.preventDefault();
-      let { sql, schema_name } = toSQL(tables.toJSON());
-
-      if (schema_name !== "public")
-        sql = `CREATE SCHEMA IF NOT EXISTS "${schema_name}";\n${sql}`;
-      sql = sql[0] === "\n" ? sql.substr(1) : sql;
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(
-        new Blob([sql], { type: "application/text" })
-      );
-      link.download = `${schema_name}_${Date.now()}.sql`;
-      link.click();
-    } else if (e.ctrlKey && !e.altKey) {
-      switch (e.key) {
-        case "1":
-          e.preventDefault();
-          $mode = "create";
           break;
-        case "2":
-          e.preventDefault();
-          $mode = "edit";
+        case "edit":
+          let { sql: esql, schema } = changes_to_sql(
+            JSON.parse(localStorage.getItem("create_tables")),
+            tables.toJSON()
+          );
+          download_file(esql, `${schema}_edit_${Date.now()}.sql`, {
+            type: "application/text"
+          });
           break;
-        case "3":
-          e.preventDefault();
-          $mode = "migration";
+        case "migration":
+          download_file(sql, `${schema_name}_${Date.now()}.sql`, {
+            type: "application/text"
+          });
           break;
       }
-    } else if (e.ctrlKey && e.altKey) {
-      switch (e.key) {
-        case "1":
-          e.preventDefault();
-          localStorage.setItem("create_tables", tables.toString());
-          break;
-        case "2":
-          e.preventDefault();
-          localStorage.setItem("edit_tables", tables.toString());
-          break;
-        case "3":
-          e.preventDefault();
-          localStorage.setItem("migration_tables", tables.toString());
-          break;
-      }
-    }
+    });
   }
-  function switchMode() {
+
+  export function switch_mode() {
     if (!editor || $editorElement) {
       switch ($mode) {
         case "create":
@@ -216,7 +111,7 @@
       }
     }
   }
-  $: switchMode($mode);
+  $: switch_mode($mode);
 
   const saved = localStorage.getItem(`${$mode}_tables`);
 
@@ -267,10 +162,10 @@
 {/if}
 
 <main
-  on:contextmenu|preventDefault={mainMenu}
-  on:mousemove={mouseMove}
-  on:touchmove={touchMove}
-  on:touchstart={touchStart}
+  on:contextmenu|preventDefault={main_menu}
+  on:mousemove={mouse_move}
+  on:touchmove={touch_move}
+  on:touchstart={touch_start}
   style="width: {editor ? 70 : 100}%;">
   <Link {tables} />
   {#each $tables as table}
