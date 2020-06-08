@@ -29,8 +29,8 @@ export default new class Tables {
         this.subscribe(_tables => tables = _tables.map(t => t.toJSON()))();
         return tables;
     }
-    toString() {
-        return JSON.stringify(this.toJSON());
+    toString(space = '') {
+        return JSON.stringify(this.toJSON(), null, space);
     }
     fromJSON(array, apply = true) {
         const self = apply ? this : new Tables();
