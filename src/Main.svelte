@@ -26,6 +26,7 @@
   }
 
   function keydown(event) {
+    key_shortcut("!b:c", event, () => {});
     key_shortcut("!e:c", event, () => {
       download_file(tables.toString("  "), `config_${Date.now()}.json`, {
         type: "application/json"
