@@ -12,7 +12,7 @@ export default function (otables, etables) {
         if (otable) {
             schema = otable.schema;
             etable.fields.forEach(efield => {
-                const ofield = otable.fields.find(ofield => ofield.id === efield.id);
+                const ofield = otable.fields.find(ofield => (ofield.id === efield.id || ofield.name === efield.name));
                 if (!ofield) {
                     sql += `ALTER TABLE ${schema_name({ schema })}"${
                         otable.name
