@@ -1,6 +1,6 @@
 export function key_shortcut(key, event, ontrue, onfalse = () => { }) {
     key = key.split(':');
-    let hold = key[1] && key[1].split(/\s*,*\s*/);
+    let hold = (key[1] && key[1].split(/\s*,*\s*/) || []);
     key = key[0];
     const condition = ['ctrlKey', 'altKey', 'shiftKey'].map(key => {
         if (hold.find(c => c === key[0]))
