@@ -1,43 +1,38 @@
-export default function (json) {
-    let result = "";
-    let ref = "";
+export default function (tables) {
+    let text = "";
     let schema = "public";
-    json.forEach(table => {
+    const fk_tables = [];
+    const fk_fields = [];
+    tables.forEach(table => {
         schema = table.schema;
-        const str = `\nTable ${table.name} {
-    ${table.fields.map((field, i) => {
-            let refTable;
-            let refField;
+        text += `Table ${table.name} {\n`;
+        table.fields.forEach(field => {
+            if (!field.name) return;
+            let brackets = [...field.constraints];
             if (field.ref) {
-                refTable = json.find(table => table.id === field.ref.table);
-                refField = refTable.fields.find(
-                    _field => _field.id === field.ref.field
-                );
-                if (refField)
-                    ref += `\nref: ${refTable.name}.${
-                        refField.name
-                        } <${field.refType
-                            .replace(/\s*to\s*/, " to ")
-                            .replace(/\s*or\s*/, " or ")}> ${table.name}.${field.name}`;
+                brackets.unshift('fk');
+                fk_tables.push(table);
+                fk_fields.push(field);
             }
-            let constraints = field.constraints.filter(
-                c => c.toLowerCase() !== "not null"
-            );
-            constraints = Array.from(new Set(constraints));
-            field.ref && constraints.unshift("fk");
-            field.pk && constraints.unshift("pk");
-            return `${i ? "\n\t" : ""}${field.name} ${field.type}${constraints.map(
-                (con, i) =>
-                    `${!i ? " [" : ""}${i ? " " : ""}${con}${
-                    constraints.length - 1 === i ? "]" : ""
-                    }`
-            )}`;
-        })}
-}\n`;
-        result += str;
+            if (field.pk) brackets.unshift('pk');
+            text += `\t${field.name} ${field.type}`;
+            if (brackets.find(con => con.toLowerCase() === "not null")) {
+                brackets = brackets.filter(con => con.toLowerCase() !== "not null");
+            } else brackets.push('null');
+            if (brackets.length) {
+                text += " [";
+                text += brackets.map((con, i) => (i ? ' ' : '') + con.toLowerCase());
+                text += "]";
+            }
+            text += "\n";
+        });
+        text += '}\n\n';
     });
-    result = result[0] === "\n" ? result.substr(1) : result;
-    return (
-        (schema == "public" ? "" : `schema: ${schema}\n\n`) + result + ref + "\n"
-    );
+    fk_fields.forEach((field, index) => {
+        const ref_table = tables.find(table => table.id === field.ref.table);
+        const ref_field = ref_table.fields.find(_field => _field.id === field.ref.field);
+        const ref_type = field.refType.replace(/\s*or\s*/, ' or ').replace(/\s*to\s*/, ' to ');
+        text += `\nref(${ref_table.name}.${ref_field.name} <${ref_type}> ${fk_tables[index].name}.${field.name})\n`;
+    });
+    return `${schema == "public" ? '' : `schema: ${schema}\n\n`}${text}`;
 }
