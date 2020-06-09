@@ -13,6 +13,7 @@
   import Editor, { render, editorElement } from "./components/Editor.svelte";
 
   let editor = !!JSON.parse(localStorage.getItem("editor"));
+  let width;
 
   onMount(() => setTimeout(() => ($tables = $tables), 10));
 
@@ -159,7 +160,7 @@
 <svelte:window on:keyup={keyup} on:keydown={keydown} />
 
 {#if editor}
-  <Editor />
+  <Editor bind:width />
 {/if}
 
 <main
@@ -167,7 +168,7 @@
   on:mousemove={mouse_move}
   on:touchmove={touch_move}
   on:touchstart={touch_start}
-  style="width: {editor ? 70 : 100}%;">
+  style="width: {editor ? 100 - width : 100}%;">
   <Link {tables} />
   {#each $tables as table}
     <Table {table} />
