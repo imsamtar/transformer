@@ -4,6 +4,7 @@
   import Field from "./Field.svelte";
   import { editorElement } from "./Editor.svelte";
   import render from "../helpers/editor/render";
+  import { key_shortcut } from "../helpers/events/index";
   export let table;
 
   let table_name;
@@ -57,8 +58,9 @@
   let offset = [0, 0];
   $: tables = $table.tables;
 
-  function keyup(e) {
-    if (e.key.toLowerCase() === "enter" && e.target.value) {
+  function keyup(event) {
+    key_shortcut("enter", event, event => {
+      if (!event.target.value) return;
       table.createField("", { pk: !$table.fields.length });
       const last = element.offsetTop + element.offsetHeight;
       if (last > innerHeight - 100)
@@ -71,8 +73,7 @@
             ]
           };
         });
-      e.preventDefault();
-    }
+    });
   }
   function click(e) {
     if (e.altKey) table.remove();
