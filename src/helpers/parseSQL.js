@@ -10,7 +10,7 @@ export default function (sql) {
         let fieldMatches = match[0].match(/(\w.+)/g).filter(l => !l.startsWith("CREATE TABLE")).map(l => l.slice(-1) === "," ? l.slice(0, -1) : l);
         fieldMatches.forEach((match) => {
             if (!match.startsWith('CONSTRAINT')) {
-                let parts = match.match(/(with\s+time\s+zone)|((default|not)\s+(\"(.*)\"|.(?<!\s))+)|(\w+)/ig);
+                let parts = match.match(/(with\s+time\s+zone)|((default|not)\s+((\"(.*)\"|\'(.*)\')[^\s]*|[^\s]+))|(\w+)/ig);
                 const constraints = parts.slice(2);
                 let field = { id: Shape.genId(), table: id, name: parts[0], type: parts[1], constraints }
                 fields.push(field);
