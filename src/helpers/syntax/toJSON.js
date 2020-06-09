@@ -24,7 +24,8 @@ export default function (text) {
                 let constraints = [];
                 let pk = false;
                 if (field[2]) {
-                    constraints = field[2].match(/\w([\s\w\:]|\'.*\')*\w?/g);
+                    field[2] = field[2].replace(/timezone/, 'with time zone');
+                    constraints = field[2].match(/\w([\s\w\:\.\(\)]|\'.*\')*\w?/g);
                     if (constraints.find(con => (/^pk$/i).exec(con))) pk = true;
                 }
                 if (!constraints.find(con => (/^null$/i).exec(con)))

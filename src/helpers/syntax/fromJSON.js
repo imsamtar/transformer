@@ -8,7 +8,7 @@ export default function (tables) {
         text += `Table ${table.name} {\n`;
         table.fields.forEach(field => {
             if (!field.name) return;
-            let brackets = [...field.constraints];
+            let brackets = [...field.constraints].map(value => (/with\s+time\s+zone/i).exec(value) ? "timezone" : value);
             if (field.ref) {
                 brackets.unshift('fk');
                 fk_tables.push(table);
