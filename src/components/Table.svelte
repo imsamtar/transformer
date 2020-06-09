@@ -12,9 +12,9 @@
 
   onMount(() => {
     if (
-      table_name.offsetLeft + table_name.offsetParent.offsetLeft + 200 >
+      table_name.offsetLeft + table_name.offsetParent.offsetLeft + 200 <
         innerWidth &&
-      table_name.offsetTop + table_name.offsetParent.offsetTop + 50 >
+      table_name.offsetTop + table_name.offsetParent.offsetTop + 50 <
         innerHeight
     )
       table_name.focus();
