@@ -1,9 +1,11 @@
 <script>
   import { onMount } from "svelte";
   import tables, { mode } from "./stores/tables";
+  import { menus } from "./stores/menus";
   import Table from "./components/Table.svelte";
   import Menu from "./components/Menu.svelte";
   import Link from "./components/Link/Link.svelte";
+  import Triggers from "./components/Triggers/Triggers.svelte";
   import { main_menu } from "./stores/index";
   import { key_shortcut, download_file } from "./helpers/events/index";
   import to_sql from "./helpers/sql/to_sql";
@@ -13,8 +15,13 @@
 
   let editor = !!JSON.parse(localStorage.getItem("editor"));
   let width;
+  let diagram = "relation";
 
   onMount(() => setTimeout(() => ($tables = $tables), 10));
+
+  function click() {
+    $menus.shown = null;
+  }
 
   function keyup(event) {
     key_shortcut("!a:sc", event, () =>
@@ -27,6 +34,12 @@
 
   function keydown(event) {
     key_shortcut("!b:c", event, () => {});
+    key_shortcut("!p:c", event, () => {
+      const diagram_modes = ["relation", "trigger"];
+      let next_index = diagram_modes.findIndex(dm => dm === diagram) + 1;
+      next_index %= diagram_modes.length;
+      diagram = diagram_modes[next_index];
+    });
     key_shortcut("!e:c", event, () => {
       download_file(tables.toString("  "), `config_${Date.now()}.json`, {
         type: "application/json"
@@ -156,7 +169,7 @@
   }
 </style>
 
-<svelte:window on:keyup={keyup} on:keydown={keydown} />
+<svelte:window on:keyup={keyup} on:keydown={keydown} on:click={click} />
 
 {#if editor}
   <Editor bind:width />
@@ -168,9 +181,13 @@
   on:touchmove={touch_move}
   on:touchstart={touch_start}
   style="width: {editor ? 100 - width : 100}%;">
-  <Link {tables} />
+  {#if diagram === 'relation'}
+    <Link {tables} />
+  {:else if diagram === 'trigger'}
+    <Triggers />
+  {/if}
   {#each $tables as table}
-    <Table {table} />
+    <Table {table} {diagram} />
   {/each}
   <Menu />
   <button class:active={editor} on:click={() => (editor = !editor)}>

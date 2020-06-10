@@ -1,3 +1,4 @@
+import triggers from "../stores/triggers";
 import { selectedField } from "../stores/tables";
 
 export function addTable({ tables, event }) {
@@ -32,4 +33,20 @@ export function addRef({ menus: { details: field } }) {
 }
 export function deleteField({ menus: { details: field } }) {
     field.remove();
+}
+
+export function addTrigger({ menus: { details: table } }) {
+    setTimeout(() =>
+        triggers.create_trigger(prompt("Enter trigger name:"), { table }), 10);
+}
+
+export function renameTrigger({ menus: { details: trigger } }) {
+    trigger.update(trigger => {
+        trigger.name = prompt("Rename trigger", trigger.name);
+        return trigger;
+    });
+}
+
+export function deleteTrigger({ menus: { details: trigger } }) {
+    trigger.remove();
 }

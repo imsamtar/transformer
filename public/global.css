@@ -7,6 +7,8 @@ body {
 }
 
 :root {
+	--bg: #cba;
+
 	--table-bg: #888;
 	--table-bg-active: #555;
 	--table-margin: 0.25rem;
@@ -20,7 +22,8 @@ body {
 	--path-z-index-active: 5;
 	--active-bonus: 2;
 
-	--bg: #cba;
+	--trigger-diameter: 100px;
+	--trigger-padding: 2rem;
 }
 
 body {

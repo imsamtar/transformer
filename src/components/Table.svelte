@@ -5,7 +5,11 @@
   import { editorElement } from "./Editor.svelte";
   import render from "../helpers/editor/render";
   import { key_shortcut } from "../helpers/events/index";
+  import triggers from "../stores/triggers";
   export let table;
+  export let diagram;
+
+  triggers.create_trigger($table.name, { table });
 
   let table_name;
   let element;
@@ -22,20 +26,21 @@
 
   function mouseover(e) {
     $table.active = true;
-    $table.fields.forEach(f => {
-      if (f.self.ref) {
-        f.self.ref.self.table.update(_table => {
-          _table.hover = true;
-          return _table;
-        });
-      }
-      f.refBy().forEach(({ self }) =>
-        self.table.update(_table => {
-          _table.hover = true;
-          return _table;
-        })
-      );
-    });
+    if (diagram === "relation")
+      $table.fields.forEach(f => {
+        if (f.self.ref) {
+          f.self.ref.self.table.update(_table => {
+            _table.hover = true;
+            return _table;
+          });
+        }
+        f.refBy().forEach(({ self }) =>
+          self.table.update(_table => {
+            _table.hover = true;
+            return _table;
+          })
+        );
+      });
   }
   function mouseleave(e) {
     $table.active = false;
@@ -135,7 +140,7 @@
 
 <div
   class="table"
-  class:active={$table.hover}
+  class:active={$table.hover || $table.active}
   bind:this={element}
   draggable="true"
   on:dragstart={dragStart}

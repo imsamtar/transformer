@@ -1,5 +1,6 @@
 import Shape from "./Shape";
 import tables from "../../stores/tables";
+import triggers from "../../stores/triggers";
 import TableField, { getID } from "./TableField";
 
 export default class Table extends Shape {
@@ -31,6 +32,10 @@ export default class Table extends Shape {
         return JSON.stringify(this.toJSON());
     }
     remove() {
+        triggers.get().forEach(trigger => {
+            if (trigger.self.table === this)
+                trigger.remove();
+        });
         this.self.fields.forEach(field => field.remove());
         this.tables = this.tables.filter(_table => _table !== this);
     }

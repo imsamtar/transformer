@@ -1,4 +1,3 @@
-import { writable } from "svelte/store";
 import Custom from "./definations/Custom";
 import * as helpers from "../helpers/";
 import tables from "./tables";
@@ -16,6 +15,11 @@ export const menus = new Custom({
             addField: {
                 name: "Add Field",
                 handler: "addField",
+                symbol: "+"
+            },
+            addTrigger: {
+                name: "Add Trigger",
+                handler: "addTrigger",
                 symbol: "+"
             },
             delete: {
@@ -39,6 +43,18 @@ export const menus = new Custom({
                 name: "Delete",
                 handler: "deleteField",
                 symbol: "×"
+            }
+        },
+        trigger: {
+            rename: {
+                name: "Rename",
+                handler: "renameTrigger",
+                symbol: "✎"
+            },
+            delete: {
+                name: "Delete",
+                handler: "deleteTrigger",
+                symbol: "✎"
             }
         }
     },
