@@ -53,8 +53,8 @@
     transition: 70ms 70ms all;
   }
   #resize:hover, #resize.moving {
-    background: #eeeeee66;
-    color: #565656;
+    background: #1e1e1ef0;
+    color: #888;
   }
 </style>
 
