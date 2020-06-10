@@ -49,11 +49,12 @@
     align-items: center;
     justify-content: center;
     font-size: 2rem;
-    color: #999;
+    color: #777;
+    transition: 130ms all;
   }
-  #resize:hover, .moving {
-    background: #1e1e1ef5 !important;
-    color: #666;
+  #resize:hover, #resize.moving {
+    background: #eeeeee66;
+    color: #565656;
   }
 </style>
 
