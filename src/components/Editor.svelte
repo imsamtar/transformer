@@ -50,7 +50,7 @@
     justify-content: center;
     font-size: 2rem;
     color: #777;
-    transition: 130ms all;
+    transition: 70ms 70ms all;
   }
   #resize:hover, #resize.moving {
     background: #eeeeee66;
