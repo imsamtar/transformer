@@ -1,6 +1,6 @@
 import { writable } from "svelte/store";
 import Custom from "./definations/Custom";
-import Table from "../helpers/classes/Table";
+import Table from "./definations/Table";
 
 export const mode = new Custom("create");
 

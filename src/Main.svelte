@@ -4,7 +4,6 @@
   import Table from "./components/Table.svelte";
   import Menu from "./components/Menu.svelte";
   import Link from "./components/Link/Link.svelte";
-  import { createTable } from "./helpers/table";
   import { main_menu } from "./stores/index";
   import { key_shortcut, download_file } from "./helpers/events/index";
   import to_sql from "./helpers/sql/to_sql";

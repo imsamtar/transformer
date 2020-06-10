@@ -1,4 +1,4 @@
-import Shape from "./classes/Shape";
+import Shape from "../stores/definations/Shape";
 
 export default function (sql) {
     let tables = [];
