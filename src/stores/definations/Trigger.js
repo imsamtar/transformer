@@ -4,6 +4,7 @@ export default class Trigger extends Shape {
     constructor(name, options) {
         super(name, {
             on: ["create", "update", "delete"],
+            code: "function name(){\n\t\n}",
             affectedTables: new Set(),
             ...options
         });

@@ -12,6 +12,7 @@
   import changes_to_sql from "./helpers/sql/changes_to_sql";
   import { mouse_move, touch_start, touch_move } from "./helpers/navigate.js";
   import Editor, { render, editorElement } from "./components/Editor.svelte";
+  import { editor_mode } from "./helpers/editor/index";
 
   let editor = !!JSON.parse(localStorage.getItem("editor"));
   let width;
@@ -19,8 +20,12 @@
 
   onMount(() => setTimeout(() => ($tables = $tables), 10));
 
-  function click() {
+  function click(event) {
     $menus.shown = null;
+    if ($editor_mode.mode !== "schema" && event.target.tagName === "svg") {
+      $editor_mode = { mode: "schema", language: "sql", tables };
+      $tables = $tables;
+    }
   }
 
   function keyup(event) {

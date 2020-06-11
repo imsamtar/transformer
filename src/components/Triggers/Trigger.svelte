@@ -1,6 +1,7 @@
 <script>
   import { selected_trigger as sel_trigger } from "../../stores/triggers";
   import { menus } from "../../stores/menus";
+  import { editor_mode } from "../../helpers/editor/index";
   import LinkedTo from "./LinkedTo.svelte";
 
   export let trigger;
@@ -18,9 +19,11 @@
   }
   function mousedown(event) {
     selected_trigger = trigger;
+    event.details = "world";
   }
   function mouseup(event) {
     selected_trigger = null;
+    event.details = "hello";
   }
   function contextmenu(event) {
     selected_trigger = null;
@@ -35,6 +38,10 @@
       $table.active = false;
       trigger.remove();
     }
+  }
+  function dblclick(event) {
+    $editor_mode = { mode: "trigger", language: "javascript", trigger };
+    $table = $table;
   }
 
   $: cx = $table.pos[0] + $trigger.pos[0];
@@ -124,6 +131,7 @@
   on:mouseup={mouseup}
   on:contextmenu={contextmenu}
   on:click={click}
+  on:dblclick={dblclick}
   {cx}
   {cy}
   r={Math.max($trigger.name.length * 6, 45)}
