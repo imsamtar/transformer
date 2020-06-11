@@ -1,16 +1,26 @@
 <script>
-  import tables from "../../stores/tables";
+  import { selected_trigger as sel_trigger } from "../../stores/triggers";
   import { menus } from "../../stores/menus";
+  import LinkedTo from "./LinkedTo.svelte";
 
   export let trigger;
   export let selected_trigger;
-  let cx, cy;
+  let cx, cy, hov;
 
-  let dragable = false;
   $: table = $trigger.table;
-
+  function mouseover(event) {
+    $table.active = true;
+    $trigger.active = true;
+  }
+  function mouseleave(event) {
+    $table.active = false;
+    $trigger.active = false;
+  }
   function mousedown(event) {
     selected_trigger = trigger;
+  }
+  function mouseup(event) {
+    selected_trigger = null;
   }
   function contextmenu(event) {
     selected_trigger = null;
@@ -18,7 +28,10 @@
     $menus.shown = "trigger";
   }
   function click(event) {
-    if (event.altKey) {
+    if (event.ctrlKey && event.shiftKey) {
+      if ($sel_trigger) $sel_trigger = null;
+      else $sel_trigger = trigger;
+    } else if (event.altKey) {
       $table.active = false;
       trigger.remove();
     }
@@ -29,50 +42,70 @@
 </script>
 
 <style>
+  path {
+    stroke: var(--trigger-bg);
+    mix-blend-mode: darken;
+    stroke-width: 5;
+    fill: none;
+  }
+  path:hover,
+  path.active {
+    stroke: var(--path-active);
+    --path-z-index: var(--path-z-index-active) !important;
+    opacity: 1 !important;
+  }
+  circle {
+    cursor: grab;
+    stroke: var(--trigger-bg);
+    stroke-width: 5;
+  }
+  circle.overlay {
+    fill: #00000000;
+    stroke: none;
+  }
   circle.dragable {
-    cursor: move;
+    cursor: grabbing;
   }
   circle.active {
-    stroke: var(--table-bg-active);
+    stroke: var(--trigger-bg-active);
   }
   text {
-    font-size: 1.08rem;
+    fill: var(--table-bg);
+    font-weight: 600;
     font-family: Arial, Helvetica, sans-serif;
     user-select: none;
+  }
+  text.active {
+    fill: var(--table-bg-active);
   }
 </style>
 
 <path
+  on:click={click}
   class:active={$table.active}
-  on:mouseover={() => ($table.active = true)}
-  on:mouseleave={() => ($table.active = false)}
-  d="M {cx}
-  {cy} L {$table.pos[0] + 125}
-  {$table.pos[1] + 25}"
-  stroke="var(--table-bg)"
-  stroke-width="12" />
+  d={`M${cx} ${cy} L${$table.pos[0] + 250} ${$table.pos[1] + 25}`} />
+
+{#each Array.from($trigger.affectedTables) as linked_table}
+  <LinkedTo
+    table={linked_table}
+    {trigger}
+    {cx}
+    {cy}
+    r={Math.max($trigger.name.length * 6, 45)}
+    bind:hover={hov}
+    active={$trigger.active} />
+{/each}
 
 <circle
-  class:active={$table.active}
-  class:dragable
-  on:mouseover={() => ($table.active = true)}
-  on:mouseleave={() => ($table.active = false)}
-  on:contextmenu={contextmenu}
-  on:click={click}
+  class:active={$table.active || hov}
   {cx}
   {cy}
-  r={Math.max($table.name.length * 12, 60)}
+  r={Math.max($trigger.name.length * 6, 30)}
   fill="#eee"
-  stroke="var(--table-bg)"
-  stroke-width="12"
-  draggable="true"
-  on:mousedown={mousedown}>
-  <text fill="red">Hello</text>
-</circle>
+  on:mousedown={mousedown} />
 
 <text
-  on:contextmenu={contextmenu}
-  on:click={click}
+  class:active={$table.active || hov}
   x={cx}
   y={cy}
   fill="black"
@@ -81,3 +114,17 @@
   contenteditable="true">
   {$trigger.name}
 </text>
+
+<circle
+  class="overlay"
+  class:dragable={selected_trigger}
+  on:mousedown={mousedown}
+  on:mouseover={mouseover}
+  on:mouseleave={mouseleave}
+  on:mouseup={mouseup}
+  on:contextmenu={contextmenu}
+  on:click={click}
+  {cx}
+  {cy}
+  r={Math.max($trigger.name.length * 6, 45)}
+  on:mousedown={mousedown} />

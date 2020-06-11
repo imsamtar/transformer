@@ -25,8 +25,8 @@
     return e;
   }
 
-  function click(e){
-    if(!e.ctrlKey && !e.shiftKey && e.altKey){
+  function click(e) {
+    if (!e.ctrlKey && !e.shiftKey && e.altKey) {
       $field.ref = null;
     }
   }
@@ -131,7 +131,7 @@
 
 <style>
   path:hover,
-  :global(path.active) {
+  path.active {
     stroke: var(--path-active);
     --path-z-index: var(--path-z-index-active) !important;
     opacity: 1 !important;
@@ -174,8 +174,7 @@
     fill="none"
     on:mouseover={() => (cardhover = true)}
     on:mouseout={() => (cardhover = false)}
-    on:click={click}
-     />
+    on:click={click} />
   <text
     class:active={isactive || cardhover}
     x={e.x - 20}

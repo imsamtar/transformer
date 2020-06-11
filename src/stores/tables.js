@@ -41,19 +41,29 @@ export default new class Tables {
                 ...newTable.self,
                 fields: obj.fields.map(field => {
                     return newTable.createField(field.name, { ...field, table: newTable, ref: null });
-                })
+                }),
+                triggers: new Set()
             }
         });
         self.update(tables => {
-            tables.forEach(({ self: table }) => {
-                const obj = array.find(o => o.id === table.id);
+            tables.forEach(table => {
+                const obj = array.find(o => o.id === table.self.id);
                 obj.fields.forEach((objfield, index) => {
                     if (objfield.ref)
-                        table.fields[index].self = {
-                            ...table.fields[index].self,
+                        table.self.fields[index].self = {
+                            ...table.self.fields[index].self,
                             ref: tables.find(t => t.self.id == objfield.ref.table).self.fields.find(f => f.self.id === objfield.ref.field)
                         }
-                })
+                });
+                obj.triggers.forEach(trigger => {
+                    table.createTrigger(trigger.name, {
+                        ...trigger,
+                        table,
+                        affectedTables: new Set(trigger.affectedTables.map(affected_table =>
+                            tables.find(table => table.self.id === affected_table)
+                        ))
+                    });
+                });
             });
             return tables;
         });

@@ -1,6 +1,6 @@
 <script>
-  import triggers from "../../stores/triggers";
-  import Trigger from "./Trigger.svelte";
+  import tables from "../../stores/tables";
+  import TableTriggers from "./TableTriggers.svelte";
 
   let selected_trigger = null;
 
@@ -31,7 +31,7 @@
 </style>
 
 <svg on:mousemove={mousemove} on:mouseup={mouseup}>
-  {#each $triggers as trigger}
-    <Trigger {trigger} bind:selected_trigger />
+  {#each $tables as table}
+    <TableTriggers {table} bind:selected_trigger />
   {/each}
 </svg>

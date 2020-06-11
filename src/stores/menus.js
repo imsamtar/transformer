@@ -51,6 +51,11 @@ export const menus = new Custom({
                 handler: "renameTrigger",
                 symbol: "✎"
             },
+            link: {
+                name: "Link table",
+                handler: "linkTable",
+                symbol: "+"
+            },
             delete: {
                 name: "Delete",
                 handler: "deleteTrigger",

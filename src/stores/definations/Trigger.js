@@ -4,17 +4,30 @@ export default class Trigger extends Shape {
     constructor(name, options) {
         super(name, {
             on: ["create", "update", "delete"],
+            affectedTables: new Set(),
             ...options
         });
-        this.triggers = [...this.triggers, this];
+        this.self.table.update(table => {
+            table.triggers.add(this);
+            return table;
+        });
+    }
+    toJSON() {
+        const json = {
+            ...this.self,
+            table: this.self.table.self.id,
+            affectedTables: Array.from(this.self.affectedTables).map(table => table.self.id)
+        };
+        delete json.element;
+        return json;
+    }
+    toString() {
+        return JSON.stringify(this.toJSON());
     }
     remove() {
-        this.triggers = this.triggers.filter(trigger => trigger !== this);
-    }
-    set triggers(triggers) { this.self.triggers.set(triggers) }
-    get triggers() {
-        let _triggers;
-        this.self.triggers.subscribe(__triggers => _triggers = __triggers)();
-        return _triggers;
+        this.self.table.update(table => {
+            table.triggers.delete(this);
+            return table;
+        });
     }
 }

@@ -5,11 +5,9 @@
   import { editorElement } from "./Editor.svelte";
   import render from "../helpers/editor/render";
   import { key_shortcut } from "../helpers/events/index";
-  import triggers from "../stores/triggers";
+  import { selected_trigger } from "../stores/triggers";
   export let table;
   export let diagram;
-
-  triggers.create_trigger($table.name, { table });
 
   let table_name;
   let element;
@@ -25,7 +23,7 @@
   });
 
   function mouseover(e) {
-    $table.active = true;
+    $table.active = $table.hover = true;
     if (diagram === "relation")
       $table.fields.forEach(f => {
         if (f.self.ref) {
@@ -43,7 +41,7 @@
       });
   }
   function mouseleave(e) {
-    $table.active = false;
+    $table.active = $table.hover = false;
     $table.fields.forEach(f => {
       if (f.self.ref) {
         f.self.ref.self.table.update(_table => {
@@ -81,7 +79,18 @@
     });
   }
   function click(e) {
-    if (e.altKey) table.remove();
+    if ($selected_trigger) {
+      $selected_trigger.update(trigger => {
+        if (trigger.affectedTables.has(table)) {
+          trigger.affectedTables.delete(table);
+        } else {
+          trigger.affectedTables = trigger.affectedTables;
+          trigger.affectedTables.add(table);
+        }
+        return trigger;
+      });
+      $selected_trigger = null;
+    } else if (e.altKey) table.remove();
   }
   function contextmenu(e) {
     $menus.details = table;
