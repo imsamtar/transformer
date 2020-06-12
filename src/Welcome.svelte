@@ -4,12 +4,18 @@
   import tables from "./stores/tables";
   import parseSQL from "./helpers/parseSQL";
   import { signOut } from "hasurafire";
+  import AutoCompleteProject from "./components/AutoCompleteProject.svelte";
 
   let files;
   let endpoint;
   let secret;
   let schema = "public";
   let pending = false;
+
+  function select({ detail: selected }) {
+    endpoint = selected.endpoint;
+    secret = selected.admin_secret;
+  }
 
   async function fetchMetadata() {
     let response = await fetch(`${endpoint}/v1/query`, {
@@ -140,6 +146,7 @@
     <div id="upper">
       <h2>Start a new project</h2>
       <fieldset>
+        <AutoCompleteProject on:select={select} />
         <label for="url">Hasura endpoint</label>
         <input type="url" bind:value={endpoint} />
         <label for="password">Admin secret</label>
