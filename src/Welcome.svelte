@@ -3,24 +3,14 @@
   import { mode } from "./stores/tables";
   import tables from "./stores/tables";
   import parseSQL from "./helpers/parseSQL";
+  import { signOut } from "hasurafire";
 
   let files;
-  let disabled;
   let endpoint;
   let secret;
   let schema = "public";
   let pending = false;
 
-  async function change(file) {
-    try {
-      $mode = "create";
-      const minified = JSON.stringify(JSON.parse(await file.text()));
-      localStorage.setItem("hasura_metadata", minified);
-      disabled = false;
-    } catch (err) {
-      disabled = true;
-    }
-  }
   async function fetchMetadata() {
     let response = await fetch(`${endpoint}/v1/query`, {
       method: "POST",
@@ -73,6 +63,8 @@
       $project_opened = true;
     }
   }
+
+  $: disabled = endpoint && !secret;
 </script>
 
 <style>
@@ -122,20 +114,24 @@
   button {
     outline: none;
     border: 0;
-    background: rgb(114, 199, 99);
+    background: #12c54b;
     color: white;
     font-size: 1.2rem;
-    font-weight: bold;
+    font-weight: 400;
     cursor: pointer;
     padding: 0.5rem;
-    text-shadow: 1px 1px 3px #5d5d5d;
+    text-transform: uppercase;
+    letter-spacing: 2px;
   }
   button:hover {
     filter: brightness(0.95);
   }
   button:disabled {
-    background: red;
-    opacity: 0.4;
+    background: #c5124b;
+  }
+  button#signout {
+    margin-top: 1px;
+    background: #1453db;
   }
 </style>
 
@@ -152,8 +148,9 @@
         <input type="schema" bind:value={schema} required={!!endpoint} />
       </fieldset>
     </div>
-    <button type="submit" disabled={disabled || (endpoint && !secret)}>
-      {pending ? '...' : 'Start'}
+    <button type="submit" {disabled}>
+      {disabled ? 'x' : pending ? '...' : 'Start'}
     </button>
+    <button type="button" id="signout" on:click={signOut}>Signout</button>
   </form>
 </main>
