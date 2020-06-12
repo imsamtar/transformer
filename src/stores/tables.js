@@ -55,15 +55,17 @@ export default new class Tables {
                             ref: tables.find(t => t.self.id == objfield.ref.table).self.fields.find(f => f.self.id === objfield.ref.field)
                         }
                 });
-                obj.triggers.forEach(trigger => {
-                    table.createTrigger(trigger.name, {
-                        ...trigger,
-                        table,
-                        affectedTables: new Set(trigger.affectedTables.map(affected_table =>
-                            tables.find(table => table.self.id === affected_table)
-                        ))
+                if (obj.triggers) {
+                    obj.triggers.forEach(trigger => {
+                        table.createTrigger(trigger.name, {
+                            ...trigger,
+                            table,
+                            affectedTables: new Set(trigger.affectedTables.map(affected_table =>
+                                tables.find(table => table.self.id === affected_table)
+                            ))
+                        });
                     });
-                });
+                }
             });
             return tables;
         });

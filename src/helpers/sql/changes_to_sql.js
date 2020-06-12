@@ -22,6 +22,15 @@ export default function (otables, etables) {
                             (r, c) => `${r} ${c.toUpperCase()}`,
                             ""
                         )};\n`;
+                    if (efield.ref) {
+                        const ref_table = etables.find(table => table.id === efield.ref.table);
+                        if (ref_table) {
+                            const ref_field = ref_table.fields.find(field => field.id === efield.ref.field);
+                            if (ref_field) {
+                                sql += `\nALTER TABLE ${schema_name({ schema })}"${etable.name}" ADD FOREIGN KEY ("${efield.name}") REFERENCES ${schema_name({ schema })}"${ref_table.name}" ("${ref_field.name}");\n`;
+                            }
+                        }
+                    }
                 }
             });
         } else {
