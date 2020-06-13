@@ -5,7 +5,7 @@
     "cross-env": "^5.2.0",
     "css-loader": "^2.1.1",
     "file-loader": "^6.0.0",
-    "hasurafire": "0.0.7",
+    "hasurafire": "0.0.8",
     "mini-css-extract-plugin": "^0.6.0",
     "monaco-editor": "^0.20.0",
     "monaco-editor-webpack-plugin": "^1.9.0",

@@ -30,6 +30,7 @@
   }
   ul {
     list-style-type: none;
+    margin: 1.9rem 0 0 0;
     padding: 0;
     background: white;
     color: black;
@@ -37,7 +38,6 @@
     width: 300px;
     max-height: 200px;
     overflow-y: auto;
-    transform: translateY(-10px);
   }
   li {
     padding: 0.3rem;
@@ -55,22 +55,7 @@
   variables={{ search: `%${searchquery}%` }}
   let:response>
   <input
-    slot="pending"
-    type="search"
-    bind:value={searchquery}
-    on:keyup={() => {
-      execute();
-      selected = false;
-    }} />
-  <input
-    slot="error"
-    type="search"
-    bind:value={searchquery}
-    on:keyup={() => {
-      execute();
-      selected = false;
-    }} />
-  <input
+    slot="*"
     type="search"
     bind:value={searchquery}
     on:keyup={() => {
