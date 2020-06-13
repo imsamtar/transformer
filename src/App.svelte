@@ -5,7 +5,7 @@
 
 <script>
   import { Root, User, SaveUser, signOut } from "hasurafire";
-  import Welcome from "./Welcome.svelte";
+  import Dashboard from "./Dashboard.svelte";
   import Main from "./Main.svelte";
   import tables from "./stores/tables";
   import Signin from "./Signin.svelte";
@@ -25,7 +25,7 @@
 
 <style>
   main {
-    background: #00000099;
+    background: #000000dd;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -46,7 +46,7 @@
         on:error={signOut} />
     {/if}
     {#if !$project_opened}
-      <Welcome />
+      <Dashboard />
     {:else}
       <Main />
     {/if}
