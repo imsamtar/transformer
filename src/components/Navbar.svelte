@@ -1,3 +1,7 @@
+<script>
+  import { User } from "hasurafire";
+</script>
+
 <style>
   nav {
     background: #333;
@@ -30,6 +34,10 @@
   <div class="container">
     <a href="/">Home</a>
     <div class="spacer">.</div>
-    <a href="/login">Login</a>
+    <User let:signout>
+      <a href="/login" on:click={signout}>Logout</a>
+      <a slot="pending" href="/login">...</a>
+      <a slot="signed-out" href="/login">Login</a>
+    </User>
   </div>
 </nav>
