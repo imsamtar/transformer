@@ -31,13 +31,25 @@
 </style>
 
 <nav>
-  <div class="container">
-    <a href="/">Home</a>
-    <div class="spacer">.</div>
-    <User let:signout>
+  <User let:signout>
+
+    <div class="container">
+      <a href="/">Dashboard</a>
+      <div class="spacer">.</div>
       <a href="/login" on:click={signout}>Logout</a>
-      <a slot="pending" href="/login">...</a>
-      <a slot="signed-out" href="/login">Login</a>
-    </User>
-  </div>
+    </div>
+
+    <div slot="pending" class="container">
+      <a href="/">Home</a>
+      <div class="spacer">.</div>
+      <a href="/login">...</a>
+    </div>
+
+    <div slot="signed-out" class="container">
+      <a href="/">Home</a>
+      <div class="spacer">.</div>
+      <a href="/login">Login</a>
+    </div>
+
+  </User>
 </nav>

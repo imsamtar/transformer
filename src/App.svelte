@@ -1,11 +1,12 @@
 <script>
-  import { Root } from "hasurafire";
+  import { Root, user } from "hasurafire";
   import { Pages, Page } from "svelte-route";
 
   import Navbar from "./components/Navbar.svelte";
   import NotFound from "./pages/NotFound.svelte";
   import Home from "./pages/Home.svelte";
   import Login from "./pages/Login.svelte";
+  import Dashboard from "./pages/Dashboard.svelte";
   import Settings from "./pages/Settings.svelte";
   import Item from "./pages/Item.svelte";
   import Items from "./pages/Items.svelte";
@@ -32,7 +33,7 @@
   <Pages alt={NotFound}>
     <Navbar />
     <div class="container">
-      <Page route="/" src={Home} />
+      <Page route="/" src={$user ? Dashboard : Home} />
       <Page route="/login" src={Login} />
       <Page route="/settings" src={Settings} />
     </div>
