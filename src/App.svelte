@@ -1,9 +1,10 @@
 <script>
-  import { Root, user } from "hasurafire";
+  import { Root, loginStatus } from "hasurafire";
   import { Pages, Page } from "svelte-route";
 
   import Navbar from "./components/Navbar.svelte";
   import NotFound from "./pages/NotFound.svelte";
+  import Loading from "./pages/Loading.svelte";
   import Home from "./pages/Home.svelte";
   import Login from "./pages/Login.svelte";
   import Dashboard from "./pages/Dashboard.svelte";
@@ -21,24 +22,28 @@
     max-width: 1300px;
     margin: 0 auto;
   }
-  /* h1 {
-    color: #ff3e00;
-    text-transform: uppercase;
-    font-size: 4em;
-    font-weight: 100;
-  } */
 </style>
 
 <Root {...config}>
   <Pages alt={NotFound}>
     <Navbar />
     <div class="container">
-      <Page route="/" src={$user ? Dashboard : Home} />
-      <Page route="/login" src={Login} />
-      <Page route="/settings" src={Settings} />
+      <Page
+        route="/"
+        guard={[$loginStatus > -1]}
+        src={$loginStatus === 0 ? Loading : Dashboard}
+        alt={Home} />
+      <Page route="/login" guard={$loginStatus} src={Login} alt={Loading} />
+      <Page
+        route="/settings"
+        src={$loginStatus === 0 ? Loading : $loginStatus === 1 ? Settings : NotFound} />
     </div>
-    <Page route="/item" src={Item} />
-    <Page route="/items" src={Items} />
+    <Page
+      route="/items/:hashid"
+      guard={[$loginStatus > -1]}
+      src={$loginStatus ? Item : Loading}
+      alt={NotFound} />
+    <Page route="/items" src={$loginStatus ? Items : NotFound} />
     <Page route="/diagram" src={Diagram} />
     <Page route="/editor" src={Editor} />
   </Pages>
