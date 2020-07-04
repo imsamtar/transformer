@@ -1,5 +1,5 @@
 <script>
-  import { Query, Mutation, signOut, user } from "hasurafire";
+  import { Query, Mutate, signOut, user } from "hasurafire";
   import { project_opened } from "./App.svelte";
   import parseSQL from "./helpers/parseSQL";
 
@@ -326,13 +326,13 @@
             <div class="options">
               <span>R</span>
               {#if selected_project.admin === $user.uid}
-                <Mutation
+                <Mutate
                   mutation="deleteSchema"
                   variables={{ schema_id: schema.schema_id }}
                   let:execute={del}
                   on:response={execute}>
                   <span slot="*" on:click={del}>D</span>
-                </Mutation>
+                </Mutate>
               {/if}
             </div>
           </div>
@@ -346,13 +346,13 @@
             {#if project.admin === $user.uid}
               <div class="options">
                 <span>R</span>
-                <Mutation
+                <Mutate
                   mutation="deleteProject"
                   variables={{ project_id: project.project_id }}
                   let:execute={del}
                   on:response={execute}>
                   <span slot="*" on:click={del}>D</span>
-                </Mutation>
+                </Mutate>
               </div>
             {/if}
           </div>
@@ -372,7 +372,7 @@
 
 {#if create}
   <main id="create-project">
-    <Mutation
+    <Mutate
       mutation={`create${create}`}
       variables={create === 'Project' ? new_project : new_schema}
       let:execute
@@ -396,7 +396,7 @@
         {/if}
       </form>
       <span slot="error" type="text" let:error>{error.message}</span>
-    </Mutation>
+    </Mutate>
   </main>
 {/if}
 
