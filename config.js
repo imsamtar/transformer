@@ -8,5 +8,6 @@ export default {
         messagingSenderId: "560833857160",
         appId: "1:560833857160:web:a7770c22b8bca68673413d",
         measurementId: "G-K888NRNFPX"
-    }
+    },
+    endpoint: "https://graphql-on-pgres.herokuapp.com/v1/graphql"
 }
