@@ -4,7 +4,7 @@
 </script>
 
 <script>
-  import { Root, User, SaveUser, signOut } from "hasurafire";
+  import { Root, User, SaveUser } from "hasurafire";
   import Dashboard from "./Dashboard.svelte";
   import Main from "./Main.svelte";
   import tables from "./stores/tables";
@@ -38,12 +38,12 @@
 <svelte:window on:keyup={keyup} />
 
 <Root {...config}>
-  <User let:user={{ email }} let:needToSave>
-    {#if needToSave}
+  <User let:user={{ email }} let:fresh_signin let:signout>
+    {#if fresh_signin}
       <SaveUser
         mutation="insertUser"
         variables={{ email, username: email.split('@')[0] }}
-        on:error={signOut} />
+        on:error={signout} />
     {/if}
     {#if !$project_opened}
       <Dashboard />
