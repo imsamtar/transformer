@@ -15,7 +15,6 @@
   };
   let new_schema = { schema_name: "" };
   let getProjects;
-  let getSchemas;
 
   function response(event) {
     const projects = event.detail.data.transformer_project;
@@ -303,7 +302,12 @@
       {execute(search_project) ? '' : ''}
       <div class="breadcrumb">
         {#if selected_project}
-          <span on:click={() => ((search = ''), (selected_project = null))}>
+          <span
+            on:click={() => {
+              search = '';
+              selected_project = null;
+              getProjects();
+            }}>
             {selected_project.project_name}
           </span>
           {#if selected_schema}
@@ -391,7 +395,10 @@
           <label>Endpoint URL:</label>
           <input type="text" required bind:value={new_project.endpoint} />
           <label>Admin Secret:</label>
-          <input type="password" required bind:value={new_project.admin_secret} />
+          <input
+            type="password"
+            required
+            bind:value={new_project.admin_secret} />
           <button>Create Project</button>
           <button type="button" on:click={() => (create = '')}>Cancel</button>
         {:else if create === 'Schema'}
