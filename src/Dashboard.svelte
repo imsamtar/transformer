@@ -391,7 +391,7 @@
           <label>Endpoint URL:</label>
           <input type="text" required bind:value={new_project.endpoint} />
           <label>Admin Secret:</label>
-          <input type="text" required bind:value={new_project.admin_secret} />
+          <input type="password" required bind:value={new_project.admin_secret} />
           <button>Create Project</button>
           <button type="button" on:click={() => (create = '')}>Cancel</button>
         {:else if create === 'Schema'}
