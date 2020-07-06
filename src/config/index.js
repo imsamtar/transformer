@@ -1,6 +1,6 @@
 export default {
     firebaseConfig: {},
-    server: "",
+    endpoint: "",
     schema: "transformer",
     queries: {
         insertUser: `mutation MyMutation($username: String, $email: String) {

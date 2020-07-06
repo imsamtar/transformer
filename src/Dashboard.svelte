@@ -14,6 +14,8 @@
     admin_secret: ""
   };
   let new_schema = { schema_name: "" };
+  let getProjects;
+  let getSchemas;
 
   function response(event) {
     const projects = event.detail.data.transformer_project;
@@ -293,6 +295,7 @@
       started
       query="searchProject"
       {variables}
+      bind:execute={getProjects}
       let:execute
       let:response
       let:error
@@ -331,7 +334,7 @@
                   variables={{ schema_id: schema.schema_id }}
                   let:execute={del}
                   on:response={execute}>
-                  <span slot="*" on:click={del}>D</span>
+                  <span slot="start" on:click={del}>D</span>
                 </Mutate>
               {/if}
             </div>
@@ -351,7 +354,7 @@
                   variables={{ project_id: project.project_id }}
                   let:execute={del}
                   on:response={execute}>
-                  <span slot="*" on:click={del}>D</span>
+                  <span slot="start" on:click={del}>D</span>
                 </Mutate>
               </div>
             {/if}
@@ -360,7 +363,7 @@
       {/if}
       <div slot="pending" class="project">...</div>
       <div
-        slot="*"
+        slot="end"
         class:schema={selected_project}
         on:click={addNew}
         class="project">
@@ -377,8 +380,11 @@
       variables={create === 'Project' ? new_project : new_schema}
       let:execute
       let:response
-      on:response={() => (search = create = '')}>
-      <form slot="*" on:submit|preventDefault={execute}>
+      on:response={() => {
+        search = create = '';
+        getProjects();
+      }}>
+      <form slot="start" on:submit|preventDefault={execute}>
         {#if create === 'Project'}
           <label>Project Name:</label>
           <input type="text" required bind:value={new_project.project_name} />
