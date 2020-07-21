@@ -1,5 +1,6 @@
 <script>
-  import { Query, Mutate, signOut, user } from "hasurafire";
+  import { onMount } from "svelte";
+  import { Query, Mutate, query, signOut, user } from "hasurafire";
   import { project_opened } from "./App.svelte";
   import parseSQL from "./helpers/parseSQL";
 
@@ -14,6 +15,18 @@
     admin_secret: ""
   };
   let new_schema = { schema_name: "" };
+
+  onMount(async function() {
+    const path = location.pathname.split("/").filter(Boolean);
+    if (/^\d+$/.test(path[0])) {
+      let res = await query("getASchema", { id: path[0] });
+      if (res.data && res.data.transformer_schema_by_pk) {
+        selected_schema = res.data.transformer_schema_by_pk;
+        selected_project = res.data.transformer_schema_by_pk.project;
+        proceed();
+      }
+    }
+  });
 
   function response(event) {
     const projects = event.detail.data.transformer_project;
@@ -64,6 +77,7 @@
         })
       });
       response = await response.text();
+      history.replaceState(null, null, `/${selected_schema.schema_id}/`);
       try {
         response = JSON.parse(response);
         console.error(response.error);

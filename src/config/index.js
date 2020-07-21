@@ -46,6 +46,22 @@ export default {
             delete_%s_schema(where: {schema_id: {_eq: $schema_id}}) {
                 affected_rows
             }
-        }`
+        }`,
+        getASchema: `
+            query getASchema($id: Int!) {
+                transformer_schema_by_pk(schema_id: $id) {
+                    schema_id
+                    project_id
+                    schema_name
+                    project {
+                        endpoint
+                        admin_secret
+                        schemas {
+                            schema_name
+                        }
+                    }
+                }
+            }
+        `
     }
 };

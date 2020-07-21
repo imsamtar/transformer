@@ -17,6 +17,7 @@
       localStorage.clear();
       $project_opened = false;
       $tables = [];
+      history.replaceState(null, null, "/");
     }
   }
 
