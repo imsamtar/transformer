@@ -10,6 +10,13 @@
   import tables from "./stores/tables";
   import Signin from "./Signin.svelte";
   import config from "./config/index";
+  import { key_shortcut } from "./helpers/events/index";
+  import PseudoQueries from "./pages/PseudoQueries.svelte";
+  import GraphqlQueries from "./pages/GraphqlQueries.svelte";
+  import PseudoTriggers from "./pages/PseudoTriggers.svelte";
+  import blocks, { autoSaveBlocks } from "./stores/blocks";
+  import { schemaReply } from "./stores/hasura";
+  import { goto, parameters, activeComponent } from "./stores/goto";
 
   function keyup(e) {
     if (e.key.toLowerCase() === "delete" && e.ctrlKey) {
@@ -19,7 +26,18 @@
       $tables = [];
       history.replaceState(null, null, "/");
     }
+    key_shortcut("!arrowright:ac", e, function() {
+      activePage = activePage < pages.length - 1 ? activePage + 1 : activePage;
+    });
+    key_shortcut("!arrowleft:ac", e, function() {
+      activePage = activePage > 0 ? activePage - 1 : activePage;
+    });
+    // console.log("key up", e.key);
   }
+
+  let pages = ["pseudo_query", "schema", "graphql_query", "pseudo_trigger"];
+  let activePage = 0;
+  let selected_schema;
 
   $: $project_opened = !!localStorage.getItem("create_tables");
 </script>
@@ -40,16 +58,15 @@
 
 <Root {...config}>
   <User let:user={{ email }} let:fresh_signin let:signout>
+    {goto(location.pathname, true) ? '' : ''}
     {#if fresh_signin}
       <SaveUser
         mutation="insertUser"
         variables={{ email, username: email.split('@')[0] }}
         on:error={signout} />
     {/if}
-    {#if !$project_opened}
-      <Dashboard />
-    {:else}
-      <Main />
+    {#if $activeComponent && $schemaReply}
+      <svelte:component this={$activeComponent} {$parameters} />
     {/if}
     <main slot="pending">
       <h1>...</h1>

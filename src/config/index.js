@@ -1,6 +1,15 @@
 export default {
-    firebaseConfig: {},
-    endpoint: "",
+    firebaseConfig: {
+        apiKey: "AIzaSyBm8xVHDFuEMcC_eg6o5WMQOtJ3lItIawA",
+        authDomain: "fruit-price-tracker.firebaseapp.com",
+        databaseURL: "https://fruit-price-tracker.firebaseio.com",
+        projectId: "fruit-price-tracker",
+        storageBucket: "fruit-price-tracker.appspot.com",
+        messagingSenderId: "560833857160",
+        appId: "1:560833857160:web:a7770c22b8bca68673413d",
+        measurementId: "G-K888NRNFPX"
+    },
+    endpoint: "https://graphql-on-pgres.herokuapp.com/v1/graphql",
     schema: "transformer",
     queries: {
         insertUser: `mutation MyMutation($username: String, $email: String) {
@@ -59,7 +68,21 @@ export default {
                         schemas {
                             schema_name
                         }
+                        pseudo_blocks {
+                            block_id
+                            type
+                            text
+                        }
                     }
+                }
+            }
+        `,
+        newBlock: `
+            mutation newBlock($type: String!, $project_id: Int!, $data: jsonb!) {
+                insert_transformer_pseudo_block_one(object: {type: $type, project_id: $project_id, text: $data}) {
+                    block_id
+                    type
+                    text
                 }
             }
         `

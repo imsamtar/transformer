@@ -3,10 +3,11 @@
   import { Query, Mutate, query, signOut, user } from "hasurafire";
   import { project_opened } from "./App.svelte";
   import parseSQL from "./helpers/parseSQL";
+  import blocks, { project_id } from "./stores/blocks";
 
+  export let selected_schema = undefined;
   let search = "";
   let selected_project;
-  let selected_schema;
   let create;
   let proceeding = false;
   let new_project = {
@@ -21,9 +22,10 @@
     if (/^\d+$/.test(path[0])) {
       let res = await query("getASchema", { id: path[0] });
       if (res.data && res.data.transformer_schema_by_pk) {
-        selected_schema = res.data.transformer_schema_by_pk;
         selected_project = res.data.transformer_schema_by_pk.project;
-        proceed();
+        selected_schema = res.data.transformer_schema_by_pk;
+        $blocks = res.data.transformer_schema_by_pk.project.pseudo_blocks;
+        await proceed();
       }
     }
   });
@@ -78,6 +80,8 @@
       });
       response = await response.text();
       history.replaceState(null, null, `/${selected_schema.schema_id}/`);
+      $project_id = selected_schema.project_id;
+      localStorage.setItem("project_id", $project_id);
       try {
         response = JSON.parse(response);
         console.error(response.error);
