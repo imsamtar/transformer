@@ -1,7 +1,8 @@
 import page from "page";
-import { writable } from "svelte/store";
+import { get, writable } from "svelte/store";
 import { query } from "hasurafire";
 import { schemaReply } from "./hasura";
+import blocks, { project_id } from "./blocks";
 
 import Dashboard from "../Dashboard.svelte";
 import QueryPseudo from "../pages/QueryPseudo.svelte";
@@ -32,31 +33,46 @@ if (!window.goto) {
     const routes = {
         "/:schema_id/*": {
             async handler(ctx, next) {
-                const res = await query("getASchema", { id: ctx.params.schema_id });
-                console.log(res);
-                if (res.data && res.data.transformer_schema_by_pk) {
-                    schemaReply.set(res.data.transformer_schema_by_pk);
-                    next();
+                if (!get(schemaReply) || get(schemaReply).schema_id !== ctx.params.schema_id) {
+                    let res = await query("getASchema", { id: ctx.params.schema_id });
+                    if (res.data && res.data.transformer_schema_by_pk) {
+                        blocks.set(res.data.transformer_schema_by_pk.project.pseudo_blocks);
+                        schemaReply.set(res.data.transformer_schema_by_pk);
+                        project_id.set(res.data.transformer_schema_by_pk.project_id);
+                        next();
+                    }
+                    else goto("/");
                 }
-                else goto("/");
             }
         },
 
-        "/:schema_id/query/pseudo/:block_id?": QueryPseudo,
-        "/:schema_id/query/code/:block_id?": QueryCode,
+        // "/:schema_id/query/pseudo/:block_id?": QueryPseudo,
+        // "/:schema_id/query/code/:block_id?": QueryCode,
+        // "/:schema_id/schema/:table_id?": Main,
+        // "/:schema_id/trigger/table/pseudo/:block_id?": TriggerTablePseudo,
+        // "/:schema_id/trigger/table/code/:block_id?": TriggerTableCode,
+        // "/:schema_id/trigger/query/pseudo/:block_id?": TriggerQueryPseudo,
+        // "/:schema_id/trigger/query/code/:block_id?": TriggerQueryCode,
+        // "/:schema_id/trigger/cron/pseudo/:block_id?": TriggerCronPseudo,
+        // "/:schema_id/trigger/cron/code/:block_id?": TriggerCronCode,
+        // "/:schema_id/component/pseudo/:block_id?": ComponentPseudo,
+        // "/:schema_id/component/code/:block_id?": ComponentCode,
+
+        "/:schema_id/pseudo/query/:block_id?": QueryPseudo,
+        "/:schema_id/code/query/:block_id?": QueryCode,
         "/:schema_id/schema/:table_id?": Main,
-        "/:schema_id/trigger/table/pseudo/:block_id?": TriggerTablePseudo,
-        "/:schema_id/trigger/table/code/:block_id?": TriggerTableCode,
-        "/:schema_id/trigger/query/pseudo/:block_id?": TriggerQueryPseudo,
-        "/:schema_id/trigger/query/code/:block_id?": TriggerQueryCode,
-        "/:schema_id/trigger/cron/pseudo/:block_id?": TriggerCronPseudo,
-        "/:schema_id/trigger/cron/code/:block_id?": TriggerCronCode,
-        "/:schema_id/component/pseudo/:block_id?": ComponentPseudo,
-        "/:schema_id/component/code/:block_id?": ComponentCode,
+        "/:schema_id/pseudo/trigger/table/:block_id?": TriggerTablePseudo,
+        "/:schema_id/code/trigger/table/:block_id?": TriggerTableCode,
+        "/:schema_id/pseudo/trigger/query/:block_id?": TriggerQueryPseudo,
+        "/:schema_id/code/trigger/query/:block_id?": TriggerQueryCode,
+        "/:schema_id/pseudo/trigger/cron/:block_id?": TriggerCronPseudo,
+        "/:schema_id/code/trigger/cron/:block_id?": TriggerCronCode,
+        "/:schema_id/pseudo/component/:block_id?": ComponentPseudo,
+        "/:schema_id/code/component/:block_id?": ComponentCode,
 
         "/:schema_id/": {
             handler(ctx) {
-                goto(`/${ctx.params.schema_id}/query/pseudo`);
+                goto(`/${ctx.params.schema_id}/pseudo/query`);
             }
         },
 

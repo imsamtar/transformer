@@ -66,7 +66,7 @@
         on:error={signout} />
     {/if}
     {#if $activeComponent && $schemaReply}
-      <svelte:component this={$activeComponent} {$parameters} />
+      <svelte:component this={$activeComponent} {...$parameters} />
     {/if}
     <main slot="pending">
       <h1>...</h1>

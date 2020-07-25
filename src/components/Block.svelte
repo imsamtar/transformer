@@ -5,18 +5,12 @@
   import "codemirror/mode/javascript/javascript.js";
 
   export let ps_query;
+  export let block_id = undefined;
 
   let dragAfter;
   let textarea;
   let draggable = true;
   let editor;
-
-  // $: if (textarea) {
-  //   editor = CodeMirror.fromTextArea(textarea, {
-  //     lineNumbers: true
-  //   });
-  //   console.log(editor);
-  // }
 
   const dispatch = createEventDispatcher();
 
@@ -59,8 +53,14 @@
       $blocks = $blocks;
     }
   }
-  function focus(event) {}
-  function blur(event) {}
+  function focus(event) {
+    history.replaceState(null, null, `./${ps_query.block_id}`);
+  }
+  let expanded = block_id == ps_query.block_id;
+
+  function expand(event) {
+    expanded = !expanded;
+  }
 </script>
 
 <style>
@@ -74,6 +74,7 @@
     display: flex;
     flex-direction: column;
     transition: 20ms 70ms border;
+    background: #555;
   }
   .block .title {
     padding: 1rem;
@@ -87,10 +88,10 @@
     border: 0.3rem solid #555;
     font-size: 1.3rem;
   }
-  .block:focus-within {
+  .expanded {
     grid-row: span 4;
   }
-  .block:focus-within > textarea {
+  .block.expanded > textarea {
     height: 100%;
     display: block;
     resize: none;
@@ -103,30 +104,48 @@
   .dragAfter {
     border-right: 1rem solid white;
   }
+  .top {
+    display: flex;
+  }
+  .top input {
+    width: 100%;
+  }
+  .icon {
+    flex: 1;
+    width: max-content;
+    background: transparent;
+    color: white;
+    font-weight: bold;
+  }
+  .right {
+    flex: 0.1;
+    float: right;
+  }
 </style>
 
 <div
   class="block is-light"
+  class:expanded
   {draggable}
   class:dragAfter={dragAfter == 1}
   class:dragBefore={dragAfter == -1}
   on:click={remove}
   on:focus={focus}
-  on:blur={blur}
   on:dragstart={e => dragStart(e, ps_query.id)}
   on:dragleave={dragLeave}
   on:dragover|preventDefault={dragOver}
   on:drop={e => blockDrop(e, ps_query.id)}>
-  <input
-    on:focus={focus}
-    on:blur={blur}
-    class="title"
-    on:keyup={keyUp}
-    bind:value={ps_query.text.title} />
+  <div class="top">
+    <input
+      on:focus={focus}
+      class="title"
+      on:keyup={keyUp}
+      bind:value={ps_query.text.title} />
+    <button class="icon right" on:click={expand}>expand</button>
+  </div>
   <textarea
     bind:this={textarea}
     on:focus={focus}
-    on:blur={blur}
     on:mousedown={textAreaMouseDown}
     on:mouseup={textAreaMouseUp}
     on:mouseleave={textAreaMouseUp}

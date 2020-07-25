@@ -113,6 +113,9 @@
 </script>
 
 <style>
+  a {
+    text-decoration: none;
+  }
   main {
     display: flex;
     flex-direction: column;
@@ -195,7 +198,7 @@
     font-weight: bold;
   }
   div.project,
-  div.schema {
+  .schema {
     grid-row: span 4;
     background: #000000cc;
     color: white;
@@ -207,11 +210,11 @@
     cursor: pointer;
     font-size: 1.3rem;
   }
-  div.schema {
+  .schema {
     background: #000000aa;
   }
   div.project:hover,
-  div.schema:hover {
+  .schema:hover {
     opacity: 0.95;
   }
 
@@ -339,12 +342,7 @@
       </div>
       {#if selected_project}
         {#each selected_project.schemas.filter(schema => schema.schema_name.indexOf(search_schema) > -1) as schema}
-          <div
-            class="schema"
-            on:click|self={() => {
-              selected_schema = schema;
-              proceed();
-            }}>
+          <a href="/{schema.schema_id}" class="schema">
             {schema.schema_name}
             <div class="options">
               <span>R</span>
@@ -358,7 +356,7 @@
                 </Mutate>
               {/if}
             </div>
-          </div>
+          </a>
         {/each}
       {:else}
         {#each response.data.transformer_project as project}

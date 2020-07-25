@@ -17,6 +17,7 @@
   let editor = !!JSON.parse(localStorage.getItem("editor"));
   let width;
   let diagram = "relation";
+  export let schema_id;
 
   onMount(() => setTimeout(() => ($tables = $tables), 10));
 
@@ -35,6 +36,13 @@
       })
     );
     key_shortcut("!b:c", event, () => (editor = !editor));
+    if (event.ctrlKey && event.altKey) {
+      if (event.key === "ArrowLeft") {
+        goto(`/${schema_id}/code/query/`);
+      } else if (event.key === "ArrowRight") {
+        goto(`/${schema_id}/pseudo/trigger/table/`);
+      }
+    }
   }
 
   function keydown(event) {
