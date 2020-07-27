@@ -72,12 +72,17 @@ if (!window.goto) {
 
         "/:schema_id/": {
             handler(ctx) {
-                goto(`/${ctx.params.schema_id}/pseudo/query`);
+                goto(`/${ctx.params.schema_id}/pseudo/query/`);
             }
         },
 
         "/": Dashboard,
-        "*": Dashboard
+        "*": {
+            handler() {
+                console.log("not found");
+                goto('/');
+            }
+        }
     };
 
     for (const route of Object.entries(routes)) {

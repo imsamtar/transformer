@@ -342,7 +342,7 @@
       </div>
       {#if selected_project}
         {#each selected_project.schemas.filter(schema => schema.schema_name.indexOf(search_schema) > -1) as schema}
-          <a href="/{schema.schema_id}" class="schema">
+          <a href="/{schema.schema_id}/" class="schema">
             {schema.schema_name}
             <div class="options">
               <span>R</span>

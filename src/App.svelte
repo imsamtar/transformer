@@ -26,10 +26,10 @@
       $tables = [];
       history.replaceState(null, null, "/");
     }
-    key_shortcut("!arrowright:ac", e, function() {
+    key_shortcut("!arrowright:ac", e, function () {
       activePage = activePage < pages.length - 1 ? activePage + 1 : activePage;
     });
-    key_shortcut("!arrowleft:ac", e, function() {
+    key_shortcut("!arrowleft:ac", e, function () {
       activePage = activePage > 0 ? activePage - 1 : activePage;
     });
     // console.log("key up", e.key);
@@ -39,7 +39,9 @@
   let activePage = 0;
   let selected_schema;
 
-  $: $project_opened = !!localStorage.getItem("create_tables");
+  $: {
+    $project_opened = !!localStorage.getItem("create_tables");
+  }
 </script>
 
 <style>
@@ -65,7 +67,7 @@
         variables={{ email, username: email.split('@')[0] }}
         on:error={signout} />
     {/if}
-    {#if $activeComponent && $schemaReply}
+    {#if $activeComponent}
       <svelte:component this={$activeComponent} {...$parameters} />
     {/if}
     <main slot="pending">

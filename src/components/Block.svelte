@@ -47,9 +47,9 @@
   function remove(event) {
     if (event.altKey) {
       const index = $blocks.indexOf(ps_query);
-      console.log($blocks.length);
+      // console.log($blocks.length);
       if (index > -1) $blocks.splice(index, 1);
-      console.log($blocks.length);
+      // console.log($blocks.length);
       $blocks = $blocks;
     }
   }
@@ -89,14 +89,22 @@
     font-size: 1.3rem;
   }
   .expanded {
-    grid-row: span 4;
+    grid-row: span 8;
   }
-  .block.expanded > textarea {
+  .expanded > textarea {
     height: 100%;
     display: block;
     resize: none;
     overflow: auto;
     padding: 0.4rem;
+  }
+  .links {
+    display: none;
+    color: white;
+    padding: 0.4rem;
+  }
+  .expanded > .links {
+    display: block;
   }
   .dragBefore {
     border-left: 1rem solid white;
@@ -131,10 +139,10 @@
   class:dragBefore={dragAfter == -1}
   on:click={remove}
   on:focus={focus}
-  on:dragstart={e => dragStart(e, ps_query.id)}
+  on:dragstart={(e) => dragStart(e, ps_query.id)}
   on:dragleave={dragLeave}
   on:dragover|preventDefault={dragOver}
-  on:drop={e => blockDrop(e, ps_query.id)}>
+  on:drop={(e) => blockDrop(e, ps_query.id)}>
   <div class="top">
     <input
       on:focus={focus}
@@ -151,4 +159,16 @@
     on:mouseleave={textAreaMouseUp}
     bind:value={ps_query.text.text}
     style="width: 100%;" />
+  <div class="links">
+    <h1>Add link</h1>
+    <input type="text" />
+    <dl>
+      <dt>Links</dt>
+      <dd>link1</dd>
+      <dd>link2</dd>
+      <dt>Linked by</dt>
+      <dd>/link1</dd>
+      <dd>/link1</dd>
+    </dl>
+  </div>
 </div>
