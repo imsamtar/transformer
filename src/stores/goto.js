@@ -5,16 +5,11 @@ import { schemaReply } from "./hasura";
 import blocks, { project_id } from "./blocks";
 
 import Dashboard from "../Dashboard.svelte";
-import QueryPseudo from "../pages/QueryPseudo.svelte";
-import QueryCode from "../pages/QueryCode.svelte";
-import TriggerTablePseudo from "../pages/TriggerTablePseudo.svelte";
-import TriggerTableCode from "../pages/TriggerTableCode.svelte";
-import TriggerQueryPseudo from "../pages/TriggerQueryPseudo.svelte";
-import TriggerQueryCode from "../pages/TriggerQueryCode.svelte";
-import TriggerCronPseudo from "../pages/TriggerCronPseudo.svelte";
-import TriggerCronCode from "../pages/TriggerCronCode.svelte";
-import ComponentPseudo from "../pages/ComponentPseudo.svelte";
-import ComponentCode from "../pages/ComponentCode.svelte";
+import Query from "../pages/Query.svelte";
+import TriggerTable from "../pages/TriggerTable.svelte";
+import TriggerQuery from "../pages/TriggerQuery.svelte";
+import TriggerCron from "../pages/TriggerCron.svelte";
+import Component from "../pages/Component.svelte";
 import Main from "../Main.svelte";
 
 export const parameters = writable({});
@@ -31,7 +26,7 @@ if (!window.goto) {
     page.start();
 
     const routes = {
-        "/:schema_id/*": {
+        "/:schema_id(\\d+)/*": {
             async handler(ctx, next) {
                 if (!get(schemaReply) || get(schemaReply).schema_id !== ctx.params.schema_id) {
                     let res = await query("getASchema", { id: ctx.params.schema_id });
@@ -46,31 +41,14 @@ if (!window.goto) {
             }
         },
 
-        // "/:schema_id/query/pseudo/:block_id?": QueryPseudo,
-        // "/:schema_id/query/code/:block_id?": QueryCode,
-        // "/:schema_id/schema/:table_id?": Main,
-        // "/:schema_id/trigger/table/pseudo/:block_id?": TriggerTablePseudo,
-        // "/:schema_id/trigger/table/code/:block_id?": TriggerTableCode,
-        // "/:schema_id/trigger/query/pseudo/:block_id?": TriggerQueryPseudo,
-        // "/:schema_id/trigger/query/code/:block_id?": TriggerQueryCode,
-        // "/:schema_id/trigger/cron/pseudo/:block_id?": TriggerCronPseudo,
-        // "/:schema_id/trigger/cron/code/:block_id?": TriggerCronCode,
-        // "/:schema_id/component/pseudo/:block_id?": ComponentPseudo,
-        // "/:schema_id/component/code/:block_id?": ComponentCode,
+        "/:schema_id(\\d+)/:focus_type(code|pseudo)/query/:block_id?": Query,
+        "/:schema_id(\\d+)/schema/:table_id?": Main,
+        "/:schema_id(\\d+)/:focus_type(code|pseudo)/trigger/table/:block_id?": TriggerTable,
+        "/:schema_id(\\d+)/:focus_type(code|pseudo)/trigger/query/:block_id?": TriggerQuery,
+        "/:schema_id(\\d+)/:focus_type(code|pseudo)/trigger/cron/:block_id?": TriggerCron,
+        "/:schema_id(\\d+)/:focus_type(code|pseudo)/component/:block_id?": Component,
 
-        "/:schema_id/pseudo/query/:block_id?": QueryPseudo,
-        "/:schema_id/code/query/:block_id?": QueryCode,
-        "/:schema_id/schema/:table_id?": Main,
-        "/:schema_id/pseudo/trigger/table/:block_id?": TriggerTablePseudo,
-        "/:schema_id/code/trigger/table/:block_id?": TriggerTableCode,
-        "/:schema_id/pseudo/trigger/query/:block_id?": TriggerQueryPseudo,
-        "/:schema_id/code/trigger/query/:block_id?": TriggerQueryCode,
-        "/:schema_id/pseudo/trigger/cron/:block_id?": TriggerCronPseudo,
-        "/:schema_id/code/trigger/cron/:block_id?": TriggerCronCode,
-        "/:schema_id/pseudo/component/:block_id?": ComponentPseudo,
-        "/:schema_id/code/component/:block_id?": ComponentCode,
-
-        "/:schema_id/": {
+        "/:schema_id(\\d+)/": {
             handler(ctx) {
                 goto(`/${ctx.params.schema_id}/pseudo/query/`);
             }
@@ -79,21 +57,21 @@ if (!window.goto) {
         "/": Dashboard,
         "*": {
             handler() {
-                console.log("not found");
                 goto('/');
             }
         }
     };
 
     for (const route of Object.entries(routes)) {
-        page(route[0], function (ctx, next) {
-            if (typeof route[1] === "object") {
-                if (route[1].handler) {
-                    route[1].handler(ctx, next);
+        const [path, value] = route;
+        page(path, function (ctx, next) {
+            if (typeof value === "object") {
+                if (value.handler) {
+                    value.handler(ctx, next);
                 }
-            } else if (typeof route[1] === "function") {
+            } else if (typeof value === "function") {
                 parameters.set(ctx.params);
-                activeComponent.set(route[1]);
+                activeComponent.set(value);
             }
         });
     }

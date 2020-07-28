@@ -38,7 +38,7 @@
     key_shortcut("!b:c", event, () => (editor = !editor));
     if (event.ctrlKey && event.altKey) {
       if (event.key === "ArrowLeft") {
-        goto(`/${schema_id}/code/query/`);
+        goto(`/${schema_id}/pseudo/query/`);
       } else if (event.key === "ArrowRight") {
         goto(`/${schema_id}/pseudo/trigger/table/`);
       }

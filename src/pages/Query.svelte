@@ -5,35 +5,38 @@
   import blocks, { project_id, saving, autoSaveBlocks } from "../stores/blocks";
   import { goto } from "../stores/goto";
 
-  let type = "pseudo_component";
+  let type = "query";
   export let schema_id = undefined;
   export let block_id = undefined;
+  export let focus_type;
 
   const dispatch = createEventDispatcher();
 
-  $: code_queries = $blocks.filter(block => block.type == type) || [];
+  $: queries = $blocks.filter((block) => block.type == type) || [];
 
   function keyUp(event) {
     if (event.ctrlKey && event.altKey) {
       if (event.key === "ArrowLeft") {
-        goto(`/${schema_id}/code/trigger/cron/`);
+        //
       } else if (event.key === "ArrowRight") {
-        goto(`/${schema_id}/code/component/`);
+        goto(`/${schema_id}/schema/`);
       }
     }
   }
 
-  async function addBlock(at_start) {
+  async function addBlock() {
     let res = await mutate("newBlock", {
       project_id: $project_id,
       type,
       data: {
         title: "Untitled",
-        text: "Some text here"
-      }
+        text: "Some text here",
+        code: "",
+        links: [],
+      },
     });
     if (res.data) {
-      blocks.update(blocks => {
+      blocks.update((blocks) => {
         blocks.push(res.data.insert_transformer_pseudo_block_one);
         return blocks;
       });
@@ -97,7 +100,7 @@
     <h3 class="title align-center" on:click={() => addBlock(false)}>
       add at end
     </h3>
-    <h3 class="title align-center" on:click={addBlock}>add new pseudo component</h3>
+    <h3 class="title align-center" on:click={addBlock}>add new pseudo query</h3>
     <span>
       {#if $saving}
         <span
@@ -108,7 +111,7 @@
       {/if}
     </span>
   </div>
-  {#each code_queries as ps_query, index}
-    <Block bind:ps_query {block_id} />
+  {#each queries as ps_query, index}
+    <Block bind:ps_query bind:block_id {type} {focus_type} />
   {/each}
 </section>

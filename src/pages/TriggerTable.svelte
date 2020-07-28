@@ -5,7 +5,7 @@
   import blocks, { project_id, saving, autoSaveBlocks } from "../stores/blocks";
   import { goto } from "../stores/goto";
 
-  let type = "code_component";
+  let type = "trigger/table";
   export let schema_id = undefined;
   export let block_id = undefined;
 
@@ -16,9 +16,9 @@
   function keyUp(event) {
     if (event.ctrlKey && event.altKey) {
       if (event.key === "ArrowLeft") {
-        goto(`/${schema_id}/pseudo/component/`);
+        goto(`/${schema_id}/schema/`);
       } else if (event.key === "ArrowRight") {
-        //
+        goto(`/${schema_id}/pseudo/trigger/query/`);
       }
     }
   }
@@ -97,9 +97,7 @@
     <h3 class="title align-center" on:click={() => addBlock(false)}>
       add at end
     </h3>
-    <h3 class="title align-center" on:click={addBlock}>
-      add new code component
-    </h3>
+    <h3 class="title align-center" on:click={addBlock}>add new pseudo table trigger</h3>
     <span>
       {#if $saving}
         <span
@@ -111,6 +109,6 @@
     </span>
   </div>
   {#each code_queries as ps_query, index}
-    <Block bind:ps_query {block_id} />
+    <Block bind:ps_query {type} {block_id} />
   {/each}
 </section>

@@ -5,20 +5,20 @@
   import blocks, { project_id, saving, autoSaveBlocks } from "../stores/blocks";
   import { goto } from "../stores/goto";
 
-  let type = "code_table_trigger";
+  let type = "component";
   export let schema_id = undefined;
   export let block_id = undefined;
 
   const dispatch = createEventDispatcher();
 
-  $: code_queries = $blocks.filter(block => block.type == type) || [];
+  $: code_queries = $blocks.filter((block) => block.type == type) || [];
 
   function keyUp(event) {
     if (event.ctrlKey && event.altKey) {
       if (event.key === "ArrowLeft") {
-        goto(`/${schema_id}/pseudo/trigger/table/`);
+        goto(`/${schema_id}/pseudo/trigger/cron/`);
       } else if (event.key === "ArrowRight") {
-        goto(`/${schema_id}/pseudo/trigger/query/`);
+        //
       }
     }
   }
@@ -29,11 +29,11 @@
       type,
       data: {
         title: "Untitled",
-        text: "Some text here"
-      }
+        text: "Some text here",
+      },
     });
     if (res.data) {
-      blocks.update(blocks => {
+      blocks.update((blocks) => {
         blocks.push(res.data.insert_transformer_pseudo_block_one);
         return blocks;
       });
@@ -97,7 +97,9 @@
     <h3 class="title align-center" on:click={() => addBlock(false)}>
       add at end
     </h3>
-    <h3 class="title align-center" on:click={addBlock}>add new code table trigger</h3>
+    <h3 class="title align-center" on:click={addBlock}>
+      add new pseudo component
+    </h3>
     <span>
       {#if $saving}
         <span
@@ -109,6 +111,6 @@
     </span>
   </div>
   {#each code_queries as ps_query, index}
-    <Block bind:ps_query {block_id} />
+    <Block bind:ps_query {type} {block_id} />
   {/each}
 </section>

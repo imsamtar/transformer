@@ -11,9 +11,6 @@
   import Signin from "./Signin.svelte";
   import config from "./config/index";
   import { key_shortcut } from "./helpers/events/index";
-  import PseudoQueries from "./pages/PseudoQueries.svelte";
-  import GraphqlQueries from "./pages/GraphqlQueries.svelte";
-  import PseudoTriggers from "./pages/PseudoTriggers.svelte";
   import blocks, { autoSaveBlocks } from "./stores/blocks";
   import { schemaReply } from "./stores/hasura";
   import { goto, parameters, activeComponent } from "./stores/goto";

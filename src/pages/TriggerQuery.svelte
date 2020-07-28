@@ -5,20 +5,20 @@
   import blocks, { project_id, saving, autoSaveBlocks } from "../stores/blocks";
   import { goto } from "../stores/goto";
 
-  let type = "pseudo_query";
+  let type = "trigger/query";
   export let schema_id = undefined;
   export let block_id = undefined;
 
   const dispatch = createEventDispatcher();
 
-  $: pseudo_queries = $blocks.filter(block => block.type == type) || [];
+  $: code_queries = $blocks.filter(block => block.type == type) || [];
 
   function keyUp(event) {
     if (event.ctrlKey && event.altKey) {
       if (event.key === "ArrowLeft") {
-        //
+        goto(`/${schema_id}/pseudo/trigger/table/`);
       } else if (event.key === "ArrowRight") {
-        goto(`/${schema_id}/code/query/`);
+        goto(`/${schema_id}/pseudo/trigger/cron/`);
       }
     }
   }
@@ -97,7 +97,7 @@
     <h3 class="title align-center" on:click={() => addBlock(false)}>
       add at end
     </h3>
-    <h3 class="title align-center" on:click={addBlock}>add new pseudo query</h3>
+    <h3 class="title align-center" on:click={addBlock}>add new pseudo query trigger</h3>
     <span>
       {#if $saving}
         <span
@@ -108,7 +108,7 @@
       {/if}
     </span>
   </div>
-  {#each pseudo_queries as ps_query, index}
-    <Block bind:ps_query {block_id} />
+  {#each code_queries as ps_query, index}
+    <Block bind:ps_query {type} {block_id} />
   {/each}
 </section>

@@ -1,22 +1,36 @@
 <script>
+  import { onMount } from "svelte";
   import { createEventDispatcher } from "svelte";
   import blocks from "../stores/blocks";
-  import CodeMirror from "codemirror";
-  import "codemirror/mode/javascript/javascript.js";
+  import { schemaReply } from "../stores/hasura";
+  // import CodeMirror from "codemirror";
+  // import "codemirror/mode/javascript/javascript.js";
 
   export let ps_query;
   export let block_id = undefined;
+  export let type;
+  export let focus_type = "pseudo";
 
   let dragAfter;
   let textarea;
   let draggable = true;
   let editor;
+  let pseudoEdit;
+  let codeEdit;
+  let newLink;
+  let editLinkIndex;
+  let linkInput;
+  let expanded = block_id == ps_query.block_id;
 
   const dispatch = createEventDispatcher();
 
+  onMount(function () {
+    (focus_type === "code" ? codeEdit : pseudoEdit).focus();
+  });
+
   function keyUp(event) {
-    if (event.key.toLowerCase() === "enter") {
-      textarea.focus();
+    if (event.key === "Enter") {
+      pseudoEdit.focus();
     }
   }
 
@@ -53,14 +67,66 @@
       $blocks = $blocks;
     }
   }
-  function focus(event) {
-    history.replaceState(null, null, `./${ps_query.block_id}`);
+  function addLink(event) {
+    if (event.key === "Enter") {
+      if (typeof editLinkIndex !== "undefined") {
+        ps_query.text.links[editLinkIndex] = newLink;
+        editLinkIndex = undefined;
+      } else {
+        ps_query.text.links = [...ps_query.text.links, newLink];
+      }
+      newLink = "";
+    }
   }
-  let expanded = block_id == ps_query.block_id;
-
+  function editLink(index) {
+    editLinkIndex = index;
+    newLink = ps_query.text.links[index];
+    linkInput.focus();
+  }
+  function removeLink(index) {
+    ps_query.text.links.splice(index, 1);
+    ps_query.text.links = ps_query.text.links;
+  }
+  function focus(event) {
+    pseudoFocus(event);
+  }
+  function pseudoFocus(event) {
+    history.replaceState(
+      null,
+      null,
+      `/${$schemaReply.schema_id}/pseudo/${type}/${ps_query.block_id}`
+    );
+  }
+  function codeFocus(event) {
+    history.replaceState(
+      null,
+      null,
+      `/${$schemaReply.schema_id}/code/${type}/${ps_query.block_id}`
+    );
+  }
   function expand(event) {
     expanded = !expanded;
+    if (expanded) {
+      focus();
+    } else {
+      history.replaceState(
+        null,
+        null,
+        `/${$schemaReply.schema_id}/pseudo/${type}/`
+      );
+    }
   }
+
+  $: links = ps_query.text.links || [];
+  $: backlinks = $blocks
+    .filter(function (other_block) {
+      return (other_block.text.links || []).find((link) => {
+        return `${ps_query.type}/${ps_query.block_id}` === link;
+      });
+    })
+    .map((block) => {
+      return `${block.type}/${block.block_id}`;
+    });
 </script>
 
 <style>
@@ -96,12 +162,25 @@
     display: block;
     resize: none;
     overflow: auto;
-    padding: 0.4rem;
+    padding: 0 0.4rem 0.4rem 0.4rem;
   }
   .links {
     display: none;
     color: white;
     padding: 0.4rem;
+  }
+  .links input {
+    background: transparent;
+    padding: 0.4rem;
+    border: none;
+    outline: none;
+    color: white;
+    font-size: 1rem;
+    border-bottom: 2px solid white;
+    width: 100%;
+  }
+  .links a {
+    color: white;
   }
   .expanded > .links {
     display: block;
@@ -129,6 +208,9 @@
     flex: 0.1;
     float: right;
   }
+  .link-btn {
+    margin: 0 0.5rem;
+  }
 </style>
 
 <div
@@ -145,30 +227,58 @@
   on:drop={(e) => blockDrop(e, ps_query.id)}>
   <div class="top">
     <input
-      on:focus={focus}
+      on:focus={pseudoFocus}
       class="title"
       on:keyup={keyUp}
       bind:value={ps_query.text.title} />
     <button class="icon right" on:click={expand}>expand</button>
   </div>
   <textarea
-    bind:this={textarea}
+    bind:this={pseudoEdit}
     on:focus={focus}
     on:mousedown={textAreaMouseDown}
     on:mouseup={textAreaMouseUp}
     on:mouseleave={textAreaMouseUp}
     bind:value={ps_query.text.text}
     style="width: 100%;" />
+  <textarea
+    bind:this={codeEdit}
+    on:focus={codeFocus}
+    on:mousedown={textAreaMouseDown}
+    on:mouseup={textAreaMouseUp}
+    on:mouseleave={textAreaMouseUp}
+    bind:value={ps_query.text.code}
+    style="width: 100%;" />
   <div class="links">
-    <h1>Add link</h1>
-    <input type="text" />
+    <input
+      bind:this={linkInput}
+      type="text"
+      placeholder="enter new link"
+      bind:value={newLink}
+      on:keyup={addLink} />
     <dl>
-      <dt>Links</dt>
-      <dd>link1</dd>
-      <dd>link2</dd>
-      <dt>Linked by</dt>
-      <dd>/link1</dd>
-      <dd>/link1</dd>
+      {#if links.length}
+        <dt>Links</dt>
+        {#each links as link, index}
+          <dd>
+            <a href="/{$schemaReply.schema_id}/pseudo/{link}">{link}</a>
+            <button class="link-btn" on:click={() => editLink(index)}>
+              edit
+            </button>
+            <button class="link-btn" on:click={() => removeLink(index)}>
+              remove
+            </button>
+          </dd>
+        {/each}
+      {/if}
+      {#if backlinks.length}
+        <dt>Backlinks</dt>
+        {#each backlinks as link}
+          <dd>
+            <a href="/{$schemaReply.schema_id}/pseudo/{link}">{link}</a>
+          </dd>
+        {/each}
+      {/if}
     </dl>
   </div>
 </div>

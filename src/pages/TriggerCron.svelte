@@ -5,7 +5,7 @@
   import blocks, { project_id, saving, autoSaveBlocks } from "../stores/blocks";
   import { goto } from "../stores/goto";
 
-  let type = "code_query";
+  let type = "trigger/cron";
   export let schema_id = undefined;
   export let block_id = undefined;
 
@@ -16,9 +16,9 @@
   function keyUp(event) {
     if (event.ctrlKey && event.altKey) {
       if (event.key === "ArrowLeft") {
-        goto(`/${schema_id}/pseudo/query/`);
+        goto(`/${schema_id}/pseudo/trigger/query/`);
       } else if (event.key === "ArrowRight") {
-        goto(`/${schema_id}/schema/`);
+        goto(`/${schema_id}/pseudo/component/`);
       }
     }
   }
@@ -97,7 +97,7 @@
     <h3 class="title align-center" on:click={() => addBlock(false)}>
       add at end
     </h3>
-    <h3 class="title align-center" on:click={addBlock}>add new code query</h3>
+    <h3 class="title align-center" on:click={addBlock}>add new pseudo cron trigger</h3>
     <span>
       {#if $saving}
         <span
@@ -109,6 +109,6 @@
     </span>
   </div>
   {#each code_queries as ps_query, index}
-    <Block bind:ps_query bind:block_id />
+    <Block bind:ps_query {type} {block_id} />
   {/each}
 </section>
