@@ -1,7 +1,7 @@
 <script>
   import Blocks from "../components/Blocks.svelte";
 
-  let type = "trigger/table";
+  let type = "component";
   export let schema_id = undefined;
   export let block_id = undefined;
   export let focus_type;

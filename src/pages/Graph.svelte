@@ -14,8 +14,8 @@
   let container;
   let cy;
   let tooltip = "";
-  let tooltip_left = 0;
-  let tooltip_top = 0;
+  let tooltip_left = 100;
+  let tooltip_top = 100;
 
   function keyup(event) {
     if (event.ctrlKey && event.altKey) {
@@ -116,11 +116,11 @@
     cy.on("mousemove", "node", function (evt) {
       var node = evt.target;
       evt = evt.originalEvent;
-      tooltip = node.data().full_title;
+      tooltip = node.data().full_title + ` - ${node.data().type}/${node.id()}`;
       tooltip_top = evt.clientY - 30;
       tooltip_left = evt.clientX;
     });
-    cy.on("tapdrag", "node", function (evt) {
+    cy.on("tapstart", "node", function (evt) {
       tooltip = "";
     });
     cy.on("mouseout", "node", function (evt) {
