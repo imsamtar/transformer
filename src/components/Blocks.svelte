@@ -4,6 +4,7 @@
   import { query, mutate } from "hasurafire";
   import blocks, { project_id, saving, autoSaveBlocks } from "../stores/blocks";
   import { goto } from "../stores/goto";
+  import { rerender } from "../pages/Graph.svelte";
 
   export let type;
   export let schema_id = undefined;
@@ -47,6 +48,7 @@
 
   $: if ($blocks) {
     autoSaveBlocks();
+    $rerender++;
   }
 </script>
 

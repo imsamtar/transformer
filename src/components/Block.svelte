@@ -73,7 +73,7 @@
         ps_query.text.links[editLinkIndex] = newLink;
         editLinkIndex = undefined;
       } else {
-        ps_query.text.links = [...ps_query.text.links, newLink];
+        ps_query.text.links = [...(ps_query.text.links || []), newLink];
       }
       newLink = "";
     }
