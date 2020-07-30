@@ -1,46 +1,44 @@
 html,
 body {
-	width: 100%;
-	height: 100vh;
-	top: 0;
-	overflow: hidden;
+    width: 100%;
+    min-height: 100vh;
+    top: 0;
+    overflow: hidden;
 }
 
 :root {
-	--bg: #cba;
-
-	--table-bg: #888;
-	--table-bg-active: #555;
-	--table-margin: 0.25rem;
-	--table-text: white;
-	--table-field-bg: #e2e0e0;
-
-	--path: #888;
-	--path-active: #555;
-	--table-z-index: 1;
-	--path-z-index: 1;
-	--path-z-index-active: 5;
-	--active-bonus: 2;
-
-	--trigger-diameter: 100px;
-	--trigger-padding: 2rem;
-	--trigger-bg: #a98;
-	--trigger-bg-active: #555;
+    --bg: #cba;
+    --table-bg: #888;
+    --table-bg-active: #555;
+    --table-margin: 0.25rem;
+    --table-text: white;
+    --table-field-bg: #e2e0e0;
+    --path: #888;
+    --path-active: #555;
+    --table-z-index: 1;
+    --path-z-index: 1;
+    --path-z-index-active: 5;
+    --active-bonus: 2;
+    --trigger-diameter: 100px;
+    --trigger-padding: 2rem;
+    --trigger-bg: #a98;
+    --trigger-bg-active: #555;
 }
 
 body {
-	color: #333;
-	background: var(--bg);
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-	display: flex;
+    color: #333;
+    background: var(--bg);
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    display: flex;
+    flex-flow: wrap;
 }
 
 .CodeMirror {
-	font-family: Consolas, "Courier New", monospace;
-	width: 100%;
-	max-width: 100%;
-	height: auto;
+    font-family: Consolas, "Courier New", monospace;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
 }

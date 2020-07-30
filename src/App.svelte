@@ -14,6 +14,7 @@
   import blocks, { autoSaveBlocks } from "./stores/blocks";
   import { schemaReply } from "./stores/hasura";
   import { goto, parameters, activeComponent } from "./stores/goto";
+  import Graph from "./pages/Graph.svelte";
 
   function keyup(e) {
     if (e.key.toLowerCase() === "delete" && e.ctrlKey) {
@@ -49,6 +50,7 @@
     justify-content: center;
     width: 100%;
     height: 100%;
+    min-height: 100vh;
     color: white;
   }
 </style>
@@ -65,6 +67,7 @@
         on:error={signout} />
     {/if}
     {#if $activeComponent}
+      <Graph />
       <svelte:component this={$activeComponent} {...$parameters} />
     {/if}
     <main slot="pending">
