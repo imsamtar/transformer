@@ -1,4 +1,4 @@
-import { get, writable } from "svelte/store";
+import {get, writable } from "svelte/store";
 import getMutation from "../helpers/getBlocksChangesMutation";
 import { mutate } from "hasurafire";
 
@@ -21,16 +21,18 @@ export function autoSaveBlocks(event) {
     }
     const _mutation = getMutation(old_blocks, current);
     clearTimeout(nextTick);
-    nextTick = setTimeout(async function () {
+    nextTick = setTimeout(async function() {
         if (_mutation) {
             try {
                 saving.set(true);
-                await mutate(_mutation);
                 old_blocks = JSON.parse(JSON.stringify(current));
+                console.log("auto saving...");
+                await mutate(_mutation);
+                console.log("saved");
             } catch (error) {
                 console.log(error.message);
             }
             saving.set(false);
         }
-    }, 1000);
+    }, 300);
 }
