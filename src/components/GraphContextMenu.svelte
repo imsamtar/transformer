@@ -36,6 +36,12 @@
     }
   }
 
+  function outer_click(event) {
+    if (top == 0 && select) {
+      select = null;
+    }
+  }
+
   onMount(function () {
     mounted = true;
   });
@@ -43,8 +49,10 @@
   $: if (contextMenu && select && top == 0) {
     const selected = contextMenu.querySelector(`#${select}`);
     if (selected) {
-      selected.focus();
-      setTimeout(() => selected.focus());
+      setTimeout(() => {
+        selected.parentElement.parentElement.focus();
+        selected.focus();
+      });
     }
   }
 
@@ -79,6 +87,11 @@
   li > ul {
     margin-top: -2rem;
     margin-left: var(--width);
+    display: none;
+  }
+  li:hover > ul,
+  li:focus-within > ul {
+    display: block;
   }
   li > span {
     padding: 0.45rem;
@@ -100,7 +113,7 @@
   }
 </style>
 
-<svelte:window on:keyup={keyup} />
+<svelte:window on:keyup={keyup} on:click={outer_click} />
 {#if top == 0}
   <ul id="context-menu" class:select bind:this={contextMenu} on:click={click}>
     <li tabindex="0">
@@ -127,9 +140,6 @@
           <span>Component</span>
         </li>
       </ul>
-    </li>
-    <li tabindex="0" id="close">
-      <span>Close</span>
     </li>
   </ul>
 {/if}

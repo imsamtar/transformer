@@ -32,7 +32,6 @@
       project_id: $project_id,
       type,
       data: {
-        title: "Untitled",
         text: "Some text here",
         code: "",
         links: [],
@@ -95,6 +94,12 @@
   #add > span:hover {
     background: transparent;
   }
+  #saving {
+    position: absolute;
+    right: 100px;
+    top: 2rem;
+    z-index: 170;
+  }
 </style>
 
 <svelte:window on:keyup={keyUp} />
@@ -105,17 +110,16 @@
       add at end
     </h3>
     <h3 class="title align-center" on:click={addBlock}>add new {type}</h3>
-    <span>
-      {#if $saving}
-        <span
-          style="padding: 0.4rem; background: green;color:white;border-radius:
-          0.5rem;">
-          saving
-        </span>
-      {/if}
-    </span>
+    <span />
   </div>
   {#each queries as ps_query, index}
     <Block bind:ps_query bind:block_id {type} {focus_type} />
   {/each}
 </section>
+{#if $saving}
+  <span
+    id="saving"
+    style="padding: 0.4rem; background: green;color:white;border-radius: 0.5rem;">
+    saving...
+  </span>
+{/if}

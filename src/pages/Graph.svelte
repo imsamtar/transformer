@@ -31,7 +31,6 @@
         project_id: $project_id,
         type,
         data: {
-          title: "Untitled",
           text: "Some text here",
           code: "",
           links: [],
@@ -47,11 +46,14 @@
     }
   }
 
-  async function keyup(event) {
+  function keyup(event) {
     if (event.ctrlKey && event.altKey) {
       if (event.key == "ArrowUp") top = 100;
       else if (event.key == "ArrowDown") top = 0;
-    } else if (event.altKey && event.key === "a") {
+    }
+  }
+  function keydown(event) {
+    if (event.altKey && event.key === "a") {
       select = "add-query";
     }
   }
@@ -103,70 +105,6 @@
     });
     cy.layout({
       name: "fcose",
-      quality: "default",
-      // Use random node positions at beginning of layout
-      // if this is set to false, then quality option must be "proof"
-      randomize: true,
-      // Whether or not to animate the layout
-      animate: true,
-      // Duration of animation in ms, if enabled
-      animationDuration: 1000,
-      // Easing of animation, if enabled
-      animationEasing: undefined,
-      // Fit the viewport to the repositioned nodes
-      fit: true,
-      // Padding around layout
-      padding: 30,
-      // Whether to include labels in node dimensions. Valid in "proof" quality
-      nodeDimensionsIncludeLabels: false,
-      // Whether or not simple nodes (non-compound nodes) are of uniform dimensions
-      uniformNodeDimensions: false,
-      // Whether to pack disconnected components - valid only if randomize: true
-      packComponents: true,
-
-      /* spectral layout options */
-
-      // False for random, true for greedy sampling
-      samplingType: true,
-      // Sample size to construct distance matrix
-      sampleSize: 25,
-      // Separation amount between nodes
-      nodeSeparation: 75,
-      // Power iteration tolerance
-      piTol: 0.0000001,
-
-      /* incremental layout options */
-
-      // Node repulsion (non overlapping) multiplier
-      nodeRepulsion: 4500,
-      // Ideal edge (non nested) length
-      idealEdgeLength: 50,
-      // Divisor to compute edge forces
-      edgeElasticity: 0.45,
-      // Nesting factor (multiplier) to compute ideal edge length for nested edges
-      nestingFactor: 0.1,
-      // Maximum number of iterations to perform
-      numIter: 2500,
-      // For enabling tiling
-      tile: true,
-      // Represents the amount of the vertical space to put between the zero degree members during the tiling operation(can also be a function)
-      tilingPaddingVertical: 10,
-      // Represents the amount of the horizontal space to put between the zero degree members during the tiling operation(can also be a function)
-      tilingPaddingHorizontal: 10,
-      // Gravity force (constant)
-      gravity: 0.25,
-      // Gravity range (constant) for compounds
-      gravityRangeCompound: 1.5,
-      // Gravity force (constant) for compounds
-      gravityCompound: 1.0,
-      // Gravity range (constant)
-      gravityRange: 3.8,
-      // Initial cooling factor for incremental layout
-      initialEnergyOnIncremental: 0.3,
-
-      /* layout event callbacks */
-      ready: () => {}, // on layoutready
-      stop: () => {}, // on layoutstop
     });
     $blocks.forEach((block, index) => {
       cy.add({
@@ -174,10 +112,10 @@
         data: {
           id: `${block.block_id}`,
           type: `${block.type}`,
-          title: `${block.text.title.slice(0, 12)}${
-            block.text.title.length > 12 ? "..." : ""
+          title: `${block.text.text.slice(0, 12)}${
+            block.text.text.length > 12 ? "..." : ""
           }`,
-          full_title: `${block.text.title}`,
+          full_title: `${block.text.text.split("\n")[0]}`,
         },
         position: {
           x: (innerWidth - 1800) * 1.5 + ((index * 300) % 1800),
@@ -241,6 +179,9 @@
       } else if (event.altKey) {
         const index = $blocks.findIndex((block) => block.block_id == node.id());
         if (index > -1) {
+          if (selected === $blocks[index]) {
+            selected = null;
+          }
           $blocks.splice(index, 1);
           $blocks = $blocks;
         }
@@ -328,7 +269,7 @@
   }
 </style>
 
-<svelte:window on:keyup={keyup} on:keyup={ctrlb} />
+<svelte:window on:keyup={keyup} on:keydown={keydown} on:keyup={ctrlb} />
 
 {#if selected}
   <aside style="top: -{top}%;">

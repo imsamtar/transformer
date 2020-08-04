@@ -1,5 +1,5 @@
 import page from "page";
-import { get, writable } from "svelte/store";
+import {get, writable } from "svelte/store";
 import { query } from "hasurafire";
 import { schemaReply } from "./hasura";
 import blocks, { project_id } from "./blocks";
@@ -28,15 +28,16 @@ if (!window.goto) {
     const routes = {
         "/:schema_id(\\d+)/*": {
             async handler(ctx, next) {
-                if (!get(schemaReply) || get(schemaReply).schema_id !== ctx.params.schema_id) {
+                if (!get(schemaReply) || get(schemaReply).schema_id != ctx.params.schema_id) {
                     let res = await query("getASchema", { id: ctx.params.schema_id });
                     if (res.data && res.data.transformer_schema_by_pk) {
                         blocks.set(res.data.transformer_schema_by_pk.project.pseudo_blocks);
                         schemaReply.set(res.data.transformer_schema_by_pk);
                         project_id.set(res.data.transformer_schema_by_pk.project_id);
                         next();
-                    }
-                    else goto("/");
+                    } else goto("/");
+                } else {
+                    next();
                 }
             }
         },
@@ -64,7 +65,7 @@ if (!window.goto) {
 
     for (const route of Object.entries(routes)) {
         const [path, value] = route;
-        page(path, function (ctx, next) {
+        page(path, function(ctx, next) {
             if (typeof value === "object") {
                 if (value.handler) {
                     value.handler(ctx, next);

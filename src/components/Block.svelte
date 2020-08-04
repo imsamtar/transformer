@@ -230,7 +230,8 @@
       on:focus={pseudoFocus}
       class="title"
       on:keyup={keyUp}
-      bind:value={ps_query.text.title} />
+      value={ps_query.text.text.split('\n')[0]}
+      readonly />
     <button class="icon right" on:click={expand}>expand</button>
   </div>
   <textarea
