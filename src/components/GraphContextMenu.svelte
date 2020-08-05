@@ -139,6 +139,9 @@
         <li tabindex="0" id="add-component">
           <span>Component</span>
         </li>
+        <li tabindex="0" id="add-if">
+          <span>If</span>
+        </li>
       </ul>
     </li>
   </ul>

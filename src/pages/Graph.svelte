@@ -23,6 +23,7 @@
   let oldblocks = "";
   let select;
   let linkme;
+  let nodes = [];
 
   async function addBlock(type) {
     type = type || prompt("Type of block?");
@@ -112,10 +113,14 @@
         data: {
           id: `${block.block_id}`,
           type: `${block.type}`,
-          title: `${block.text.text.slice(0, 12)}${
-            block.text.text.length > 12 ? "..." : ""
-          }`,
-          full_title: `${block.text.text.split("\n")[0]}`,
+          title:
+            block.type == "if"
+              ? "if"
+              : `${block.text.text.slice(0, 12)}${
+                  block.text.text.length > 12 ? "..." : ""
+                }`,
+          full_title:
+            block.type == "if" ? "if" : `${block.text.text.split("\n")[0]}`,
         },
         position: {
           x: (innerWidth - 1800) * 1.5 + ((index * 300) % 1800),
@@ -123,6 +128,10 @@
         },
         style: {
           "background-color": colors[block.type],
+          shape: block.type == "if" ? "diamond" : "circle",
+          ...(nodes.find((node) => node.data().id == `${block.block_id}`)
+            ? { "border-width": 7, "border-color": "orange" }
+            : {}),
         },
       });
     });
@@ -153,6 +162,7 @@
       const event = evt.originalEvent;
       if (event.ctrlKey) {
         if (event.shiftKey) {
+          // CTRL + SHIFT
           if (linkme) {
             const block = $blocks.find((block) => block.block_id == linkme);
             if (block) {
@@ -172,7 +182,16 @@
           } else {
             linkme = node.id();
           }
+        } else if (event.altKey) {
+          const index = nodes.findIndex((n) => n.data().id == node.data().id);
+          if (index == -1) {
+            nodes = [...nodes, node];
+          } else {
+            nodes.splice(index, 1);
+            nodes = nodes;
+          }
         } else {
+          // CTRL
           goto(`/${schema_id}/pseudo/${node.data().type}/${node.id()}`, true);
           top = 100;
         }
@@ -189,9 +208,10 @@
         selected = $blocks.find((block) => block.block_id == node.id());
       }
     });
+    // Hover Node
     cy.on("mousemove", "node", function (evt) {
-      var node = evt.target;
-      event = evt.originalEvent;
+      const node = evt.target;
+      const event = evt.originalEvent;
       if (event.shiftKey) {
         const foundBlock = $blocks.find((block) => block.block_id == node.id());
         if (foundBlock) {
@@ -204,10 +224,37 @@
       tooltip_top = event.clientY - 80;
       tooltip_left = event.clientX + 30;
     });
+    // Hover edge
+    cy.on("mousemove", "edge", function (evt) {
+      const event = evt.originalEvent;
+      const edge = evt.target;
+      const node = edge._private.source._private;
+      if (node.data.type == "if") {
+        const block = $blocks.find((block) => block.block_id == node.data.id);
+        if (block) {
+          const edges = node.edges.filter((edge) =>
+            edge._private.data.id.startsWith(node.data.id)
+          );
+          const index = edges.findIndex(
+            (ed) => ed._private.data.id === edge._private.data.id
+          );
+          if (index) tooltip = `if is not: ${block.text.text}`;
+          else tooltip = `if: ${block.text.text}`;
+        }
+      }
+      tooltip_top = event.clientY - 80;
+      tooltip_left = event.clientX + 30;
+    });
+
+    // Tap Node
     cy.on("tapstart", "node", function (evt) {
       tooltip = "";
     });
     cy.on("mouseout", "node", function (evt) {
+      tooltip = "";
+    });
+    // Hover end
+    cy.on("mouseout", "edge", function (evt) {
       tooltip = "";
     });
     // }
