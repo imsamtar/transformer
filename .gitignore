@@ -1,5 +1,8 @@
 .DS_Store
 node_modules
 public/bundle.*
+public/[0-9]*.[0-9]*.js
+public/*.worker.js
+public/*.ttf
 package-lock.json
 yarn.lock

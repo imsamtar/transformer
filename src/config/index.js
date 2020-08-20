@@ -1,15 +1,17 @@
 export default {
+    // Google sign-in (Firebase web app credentials)
     firebaseConfig: {
-        apiKey: "AIzaSyBm8xVHDFuEMcC_eg6o5WMQOtJ3lItIawA",
-        authDomain: "fruit-price-tracker.firebaseapp.com",
-        databaseURL: "https://fruit-price-tracker.firebaseio.com",
-        projectId: "fruit-price-tracker",
-        storageBucket: "fruit-price-tracker.appspot.com",
-        messagingSenderId: "560833857160",
-        appId: "1:560833857160:web:a7770c22b8bca68673413d",
-        measurementId: "G-K888NRNFPX"
+        apiKey: "YOUR_FIREBASE_API_KEY",
+        authDomain: "YOUR_PROJECT.firebaseapp.com",
+        databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+        projectId: "YOUR_PROJECT",
+        storageBucket: "YOUR_PROJECT.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID",
+        measurementId: "YOUR_MEASUREMENT_ID"
     },
-    endpoint: "https://graphql-on-pgres.herokuapp.com/v1/graphql",
+    // Hasura GraphQL endpoint of the backend that stores users, projects and pseudo blocks
+    endpoint: "https://YOUR_HASURA_APP/v1/graphql",
     schema: "transformer",
     queries: {
         insertUser: `mutation MyMutation($username: String, $email: String) {

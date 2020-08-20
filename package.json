@@ -1,6 +1,8 @@
 {
-  "name": "svelte-app",
+  "name": "transformer",
   "version": "1.0.0",
+  "description": "Visual database schema designer and pseudo-code planner for Hasura/Postgres, built with Svelte",
+  "license": "MIT",
   "devDependencies": {
     "cross-env": "^5.2.0",
     "css-loader": "^2.1.1",
