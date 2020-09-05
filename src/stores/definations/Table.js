@@ -15,8 +15,8 @@ export default class Table extends Shape {
         });
         this.self.tables.update(tables => [...tables, this]);
     }
-    createField(name, options) {
-        return new TableField(name, { table: this, ...options });
+    createField(name, options, index) {
+        return new TableField(name, { table: this, ...options }, index);
     }
     createTrigger(name, options) {
         let pos = [20, -100];
@@ -52,7 +52,7 @@ export default class Table extends Shape {
         this.tables = this.tables.filter(_table => _table !== this);
     }
     get fields() { return this.self.fields }
-    set fields(fields) { this.self = { ...this.self, fields } }
+    set fields(fields) { this.self = {...this.self, fields } }
     set tables(_) { tables.set(_) }
     get tables() {
         let _tables;

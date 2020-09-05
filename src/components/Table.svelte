@@ -25,15 +25,15 @@
   function mouseover(e) {
     $table.active = $table.hover = true;
     if (diagram === "relation")
-      $table.fields.forEach(f => {
+      $table.fields.forEach((f) => {
         if (f.self.ref) {
-          f.self.ref.self.table.update(_table => {
+          f.self.ref.self.table.update((_table) => {
             _table.hover = true;
             return _table;
           });
         }
         f.refBy().forEach(({ self }) =>
-          self.table.update(_table => {
+          self.table.update((_table) => {
             _table.hover = true;
             return _table;
           })
@@ -42,15 +42,15 @@
   }
   function mouseleave(e) {
     $table.active = $table.hover = false;
-    $table.fields.forEach(f => {
+    $table.fields.forEach((f) => {
       if (f.self.ref) {
-        f.self.ref.self.table.update(_table => {
+        f.self.ref.self.table.update((_table) => {
           _table.hover = false;
           return _table;
         });
       }
       f.refBy().forEach(({ self }) =>
-        self.table.update(_table => {
+        self.table.update((_table) => {
           _table.hover = false;
           return _table;
         })
@@ -62,25 +62,36 @@
   $: tables = $table.tables;
 
   function keyup(event) {
-    key_shortcut("enter", event, event => {
+    key_shortcut("enter", event, (event) => {
       if (!event.target.value) return;
-      table.createField("", { pk: !$table.fields.length });
+      const fieldIndex = $table.fields
+        .map((field) => field.self)
+        .findIndex((f) => f.name === event.target.value);
+      table.createField(
+        "",
+        { pk: !$table.fields.length },
+        fieldIndex == -1 ? undefined : fieldIndex + 1
+      );
+      if (fieldIndex > -1) {
+        const el = element.querySelector(`div:nth-child(${3 + fieldIndex}) input`);
+        setTimeout(() => el && el.focus(), 5);
+      }
       const last = element.offsetTop + element.offsetHeight;
       if (last > innerHeight - 100)
-        $tables.forEach(_table => {
+        $tables.forEach((_table) => {
           _table.self = {
             ..._table.self,
             pos: [
               _table.self.pos[0],
-              _table.self.pos[1] - last - 100 + innerHeight
-            ]
+              _table.self.pos[1] - last - 100 + innerHeight,
+            ],
           };
         });
     });
   }
   function click(e) {
     if ($selected_trigger) {
-      $selected_trigger.update(trigger => {
+      $selected_trigger.update((trigger) => {
         if (trigger.affectedTables.has(table)) {
           trigger.affectedTables.delete(table);
         } else {
@@ -160,9 +171,7 @@
   on:mouseover={mouseover}
   on:mouseleave={mouseleave}
   style="left: {$table.pos[0]}px;top: {$table.pos[1]}px">
-  <h3>
-    <input type="text" bind:value={$table.name} bind:this={table_name} />
-  </h3>
+  <h3><input type="text" bind:value={$table.name} bind:this={table_name} /></h3>
   {#each $table.fields as field}
     <Field {field} />
   {/each}

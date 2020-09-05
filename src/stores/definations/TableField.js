@@ -1,7 +1,7 @@
 import Shape from "./Shape";
 
 export default class TableField extends Shape {
-    constructor(name, options = {}) {
+    constructor(name, options = {}, index) {
         super(name, {
             type: "int",
             constraints: [],
@@ -11,7 +11,10 @@ export default class TableField extends Shape {
         });
         options.table.self = {
             ...options.table.self,
-            fields: [...options.table.self.fields, this]
+            fields: index ? [
+                ...options.table.self.fields.slice(0, index),
+                this, ...options.table.self.fields.slice(index)
+            ] : [...options.table.self.fields, this]
         }
     }
     refBy(table) {
@@ -37,7 +40,7 @@ export default class TableField extends Shape {
         return JSON.stringify(this.toJSON());
     }
     remove() {
-        this.self = { ...this.self, ref: undefined };
+        this.self = {...this.self, ref: undefined };
         this.refBy().forEach(f => f.update(f => {
             f.ref = null;
             return f

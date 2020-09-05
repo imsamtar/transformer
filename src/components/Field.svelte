@@ -8,6 +8,7 @@
 
   export let field;
   let element;
+  let input;
 
   onMount(() => {
     if (
@@ -21,7 +22,9 @@
   function keyup(e) {
     if (!$field.name && e.key.toLowerCase() === "backspace") {
       if (del) {
-        const fieldIndex = $field.table.self.fields.findIndex(f => f === field);
+        const fieldIndex = $field.table.self.fields.findIndex(
+          (f) => f === field
+        );
         fieldIndex &&
           $field.table.self.fields[fieldIndex - 1].self.element
             .querySelector("input")
@@ -100,11 +103,8 @@
     type="text"
     on:keyup={keyup}
     bind:value={$field.name}
+    bind:this={input}
     title={`${$field.table.self.name}.${$field.name} (${($field.type || '').toUpperCase()}) ${$field.pk ? 'pk' : ''}${$field.ref ? 'fk' : ''}`} />
-  {#if $field.pk}
-    <span>PK</span>
-  {/if}
-  {#if $field.ref}
-    <span>FK</span>
-  {/if}
+  {#if $field.pk}<span>PK</span>{/if}
+  {#if $field.ref}<span>FK</span>{/if}
 </div>
