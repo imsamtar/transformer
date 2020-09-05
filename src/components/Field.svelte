@@ -40,6 +40,32 @@
     del = false;
   }
 
+  function keydown(event) {
+    if (event.key == "ArrowDown") {
+      const selection = event.target.selectionStart;
+      const nextField = $field.table.self.element.querySelector(
+        `#${element.id} + div input`
+      );
+      if (nextField) {
+        nextField.focus();
+        event.preventDefault();
+      }
+    } else if (event.key == "ArrowUp") {
+      const selection = event.target.selectionStart;
+      const fields = Array.from(
+        $field.table.self.element.querySelectorAll(`div`)
+      );
+      const index = fields.findIndex((e) => e == element);
+      if (index > 0) {
+        const field = fields[index - 1];
+        if (field) {
+          (field.querySelector("input") || {}).focus();
+        }
+        event.preventDefault();
+      }
+    }
+  }
+
   function click(e) {
     if (e.altKey) {
       field.remove();
@@ -67,6 +93,13 @@
   $: if ($field.name.match(/\s/g)) {
     $field.name = $field.name.replace(/\s/g, "");
     $editorElement && render($editorElement)();
+  }
+  $: if ($field.name.match(/\(\w+\)/g)) {
+    $field.name = $field.name.replace(/\(\w+\)/g, (match) => {
+      $field.type = match.slice(1, -1);
+      return "";
+    });
+    $field.table.update((t) => t);
   }
 </script>
 
@@ -100,6 +133,7 @@
 </style>
 
 <div
+  id="field-{$field.id}"
   bind:this={element}
   on:click={click}
   on:contextmenu={contextmenu}
@@ -107,6 +141,7 @@
   <input
     type="text"
     on:keyup={keyup}
+    on:keydown={keydown}
     bind:value={$field.name}
     bind:this={input}
     title={`${$field.table.self.name}.${$field.name} (${($field.type || '').toUpperCase()}) ${$field.pk ? 'pk' : ''}${$field.ref ? 'fk' : ''}`} />
