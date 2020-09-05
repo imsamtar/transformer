@@ -31,6 +31,11 @@
             .focus();
         field.remove();
       } else return (del = true);
+    } else if (e.ctrlKey && e.key == "p") {
+      field.update((f) => {
+        f.pk = !f.pk;
+        return f;
+      });
     }
     del = false;
   }
