@@ -69,11 +69,17 @@
         .findIndex((f) => f.name === event.target.value);
       table.createField(
         "",
-        { pk: !$table.fields.length },
+        {
+          type: $table.fields.length ? "text" : "serial",
+          pk: !$table.fields.length,
+          constraints: ["not null"],
+        },
         fieldIndex == -1 ? undefined : fieldIndex + 1
       );
       if (fieldIndex > -1) {
-        const el = element.querySelector(`div:nth-child(${3 + fieldIndex}) input`);
+        const el = element.querySelector(
+          `div:nth-child(${3 + fieldIndex}) input`
+        );
         setTimeout(() => el && el.focus(), 5);
       }
       const last = element.offsetTop + element.offsetHeight;
