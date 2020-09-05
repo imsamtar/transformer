@@ -3,7 +3,7 @@ import Shape from "./Shape";
 export default class TableField extends Shape {
     constructor(name, options = {}, index) {
         super(name, {
-            type: "int",
+            type: "text",
             constraints: [],
             ref: null,
             refType: "1to*",
